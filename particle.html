@@ -1,0 +1,276 @@
+<style>
+body {
+  overflow: hidden;
+  margin: 0;
+}
+</style>
+
+<script type="x-shader/x-vertex" id="vs">
+  attribute vec3 position;
+  attribute vec2 texCoord;
+  uniform float time;
+  varying vec2 vTexCoord;
+
+  void main() {
+    float dist = length(position.xz + 2.5) * 3.0;
+    float s = sin(dist - time * 3.0) * 0.2;
+    float zk = (position.x + 2.5) / 5.0 * 2.0;
+    float z = s * zk;
+    vec3 p = vec3(position.x, position.y, z);
+
+    float offset = max(time - position.y * 10.0, 0.0);
+
+    vTexCoord = vec2(texCoord.x, texCoord.y + offset);
+
+    gl_Position = vec4(position.x, position.y + offset, z, 1.0);
+    gl_PointSize = length(position.xy) * 2.0 - sin(time);
+  }
+</script>
+
+<script type="x-shader/x-fragment" id="fs">
+  precision highp float;
+  uniform sampler2D texture;
+  varying vec2 vTexCoord;
+
+  void main() {
+    vec4 samplerColor = texture2D(texture, vTexCoord);
+
+    gl_FragColor = samplerColor;
+  }
+</script>
+
+<script>
+const TEXTURE_SRC = 'https://i.imgur.com/xQdYC7x.jpg'
+
+function init (img) {
+  initWebGL()
+
+  const program = createProgram('vs', 'fs')
+  if (!program) return
+
+  // 頂点座標
+  const position = [];
+  const texCoord = [];
+  {
+    const width = 2.0;
+    const half = width / 2.0;
+    const interval = width / 1280.0;
+    const count = width / interval;
+
+    for (let i = 0; i <= count; ++i) {
+      let x = -half + i * interval;
+      for (let j = 0; j <= count; ++j) {
+        let y = -half + j * interval;
+        position.push(x, y, 0.0);
+        texCoord.push(i / count, 1.0 - j / count);
+      }
+    }
+  }
+  const positionCount = position.length / 3
+
+  // attribute 定義
+  createAttribute({
+    position: {
+      stride: 3,
+      value: position
+    },
+    texCoord: {
+      stride: 2,
+      value: texCoord
+    }
+  }, program)
+
+  // attribute 設定
+  setAttribute('position')
+  setAttribute('texCoord')
+
+  // uniform 定義
+  createUniform({
+    time: {
+      type: '1f'
+    },
+    resolution: {
+      type: '2fv'
+    },
+    texture: {
+      type: '1i'
+    }
+  }, program)
+
+  // テクスチャ設定
+  createTexture(img)
+  setUniform('texture', 0)
+
+  clearColor(0, 0, 0, 1)
+
+  initSize()
+
+  start((time) => {
+    // uniform 設定
+    setUniform('time', time / 1000)
+  }, 'POINTS', positionCount)
+}
+
+loadImage(TEXTURE_SRC, init)
+
+// --------------------
+// library
+// --------------------
+
+let canvas, gl
+const attributes = {}
+const uniforms = {}
+
+function initWebGL () {
+  canvas = document.createElement('canvas')
+  gl = canvas.getContext('webgl')
+  document.body.appendChild(canvas)
+}
+
+function createShader (id) {
+  const scriptElement = document.getElementById(id)
+  const shader = (() => {
+    switch (scriptElement.type) {
+      case 'x-shader/x-vertex':
+        return gl.createShader(gl.VERTEX_SHADER)
+      case 'x-shader/x-fragment':
+        return gl.createShader(gl.FRAGMENT_SHADER)
+      default:
+        return
+    }
+  })()
+
+  gl.shaderSource(shader, scriptElement.textContent)
+  gl.compileShader(shader)
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(shader))
+    return
+  }
+
+  return shader
+}
+
+function createProgram (vsId, fsId) {
+  const program = gl.createProgram()
+  gl.attachShader(program, createShader(vsId))
+  gl.attachShader(program, createShader(fsId))
+  gl.linkProgram(program)
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error(gl.getProgramInfoLog(program))
+    return
+  }
+
+  gl.useProgram(program)
+  return program
+}
+
+function createAttribute (data, program) {
+  Object.keys(data).forEach(key => {
+    const { stride, value } = data[key]
+    attributes[key] = {
+      location: gl.getAttribLocation(program, key),
+      stride,
+      vbo: createVbo(value)
+    }
+  })
+}
+
+function createVbo (data) {
+  const vbo = gl.createBuffer()
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
+  gl.bindBuffer(gl.ARRAY_BUFFER, null)
+  return vbo
+}
+
+function setAttribute (name) {
+  const { vbo, location, stride } = attributes[name]
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
+  gl.enableVertexAttribArray(location)
+  gl.vertexAttribPointer(location, stride, gl.FLOAT, false, 0, 0)
+}
+
+function createUniform (data, program) {
+  Object.keys(data).forEach(key => {
+    const uniform = data[key]
+    uniforms[key] = {
+      location: gl.getUniformLocation(program, key),
+      type: `uniform${uniform.type}`
+    }
+  })
+}
+
+function setUniform (name, value) {
+  const uniform = uniforms[name]
+  if (!uniform) return
+
+  gl[uniform.type](uniform.location, value)
+}
+
+function bindTexture (texture) {
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+}
+
+function createTexture (img) {
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+  gl.generateMipmap(gl.TEXTURE_2D)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.bindTexture(gl.TEXTURE_2D, null)
+
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+}
+
+function clearColor (...args) {
+  gl.clearColor(...args)
+}
+
+function loadImage (src, callback) {
+  const img = new Image(src)
+  img.addEventListener('load', () => {
+    callback(img)
+  })
+  img.crossOrigin = 'anonymous'
+  img.src = src
+}
+
+function setSize () {
+  canvas.width = window.innerWidth
+  canvas.height = window.innerHeight
+
+  gl.viewport(0, 0, canvas.width, canvas.height)
+
+  setUniform('resolution', [canvas.width, canvas.height])
+}
+
+function initSize () {
+  setSize()
+  window.addEventListener('resize', () => {
+    setSize()
+  })
+}
+
+function start (draw, mode, count) {
+  function render (time) {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+    draw(time)
+
+    gl.drawArrays(gl[mode], 0, count)
+
+    requestAnimationFrame(render)
+  }
+  requestAnimationFrame(render)
+}
+</script>
