@@ -12,6 +12,8 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/88/three.min.js"></script>
 <script src="https://unpkg.com/three-bas@2.0.2/dist/bas.min.js"></script>
 
+<script src="js/threePost.js"></script>
+
 <script>
 const TEXTURE_SRC_BEFORE = 'https://images.unsplash.com/photo-1457369900526-e7606baa133b?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&fit=max&s=96647cd4038299342a15cd2bd177075f'
 const TEXTURE_SRC_AFTER = 'https://images.unsplash.com/photo-1456947700819-d91abdf38117?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&fit=max&s=96647cd4038299342a15cd2bd177075f'
@@ -27,7 +29,7 @@ function init (textureBefore, textureAfter) {
   const intervalX = width / PREFAB.WIDTH
   const intervalY = height / PREFAB.HEIGHT
 
-  const three = new THREEWrapper({
+  const root = new THREERoot({
     cameraPosition: [0, 0, width * 2.5]
   })
 
@@ -109,14 +111,40 @@ function init (textureBefore, textureAfter) {
   const mesh = new THREE.Mesh(geometry, material)
   mesh.frustumCulled = false
 
-  three.add(mesh)
+  root.add(mesh)
+
+  root.initPostProcessing([
+    new THREE.ShaderPass({
+      uniforms: {
+        'tDiffuse': { type: 't', value: null },
+      },
+      vertexShader: `
+        varying vec2 vUv;
+
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        varying vec2 vUv;
+
+        void main() {
+          vec4 texel = texture2D( tDiffuse, vUv );
+          // texel.r = 1.;
+          gl_FragColor = texel;
+        }
+      `,
+    })
+  ])
 
   let time = 0
-  three.addUpdateCallback(() => {
+  root.addUpdateCallback(() => {
     material.uniforms['uTime'].value = time++
   })
 
-  three.start()
+  root.start()
 }
 
 let textureBefore, textureAfter
@@ -136,7 +164,7 @@ new THREE.TextureLoader().load(TEXTURE_SRC_AFTER, texture => {
 // Three.js Wrapper
 // forked from https://github.com/zadvorsky/three.bas/blob/86931253240abadf68b7c62edb934b994693ed4a/examples/_js/root.js
 // --------------------
-class THREEWrapper {
+class THREERoot {
   constructor (params) {
     // defaults
     params = Object.assign({
@@ -260,12 +288,16 @@ class THREEWrapper {
 
   tick (time) {
     this.update(time)
-    this.renderer.render(this.scene, this.camera)
+    this.render()
     this.animationFrameId = requestAnimationFrame(time => { this.tick(time) })
   }
 
   update (time) {
     this.updateCallbacks.forEach(callback => { callback(time) })
+  }
+
+  render () {
+    this.renderer.render(this.scene, this.camera)
   }
 
   resize () {
@@ -279,6 +311,39 @@ class THREEWrapper {
 
     this.renderer.setSize(this.width, this.height)
     this.resizeCallbacks.forEach(callback => { callback() })
+  }
+
+  initPostProcessing (passes) {
+    const size = this.renderer.getSize()
+    const pixelRatio = this.renderer.getPixelRatio()
+    size.width *= pixelRatio
+    size.height *= pixelRatio
+
+    const composer = this.composer = new THREE.EffectComposer(this.renderer, new THREE.WebGLRenderTarget(size.width, size.height, {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat,
+      stencilBuffer: false
+    }))
+
+    const renderPass = new THREE.RenderPass(this.scene, this.camera)
+    composer.addPass(renderPass)
+
+    for (let i = 0; i < passes.length; i++) {
+      const pass = passes[i]
+      pass.renderToScreen = (i === passes.length - 1)
+      composer.addPass(pass)
+    }
+
+    this.renderer.autoClear = false
+    this.render = () => {
+      this.renderer.clear()
+      composer.render()
+    }
+
+    this.addResizeCallback(() => {
+      composer.setSize(window.innerWidth * pixelRatio, window.innerHeight * pixelRatio)
+    })
   }
 
   checkPointer ({ x, y }, meshs, handler, nohandler) {

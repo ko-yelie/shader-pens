@@ -15,7 +15,7 @@ function init (texture) {
   const width = image.width
   const height = image.height
 
-  const three = new THREEWrapper({
+  const root = new THREERoot({
     cameraPosition: [0, 0, width * 1.5]
   })
 
@@ -33,7 +33,7 @@ function init (texture) {
       centroid.x,
       centroid.y,
       centroid.z,
-      Math.random() // random coefficient
+      Math.random()
     ).toArray(data)
   })
 
@@ -90,14 +90,14 @@ function init (texture) {
   const mesh = new THREE.Mesh(geometry, material)
   mesh.frustumCulled = false
 
-  three.add(mesh)
+  root.add(mesh)
 
   let time = 0
-  three.addUpdateCallback(() => {
+  root.addUpdateCallback(() => {
     material.uniforms['uTime'].value = time++
   })
 
-  three.start()
+  root.start()
 }
 
 new THREE.TextureLoader().load(TEXTURE_SRC, init)
@@ -106,7 +106,7 @@ new THREE.TextureLoader().load(TEXTURE_SRC, init)
 // Three.js Wrapper
 // forked from https://github.com/zadvorsky/three.bas/blob/86931253240abadf68b7c62edb934b994693ed4a/examples/_js/root.js
 // --------------------
-class THREEWrapper {
+class THREERoot {
   constructor (params) {
     // defaults
     params = Object.assign({
@@ -230,12 +230,16 @@ class THREEWrapper {
 
   tick (time) {
     this.update(time)
-    this.renderer.render(this.scene, this.camera)
+    this.render()
     this.animationFrameId = requestAnimationFrame(time => { this.tick(time) })
   }
 
   update (time) {
     this.updateCallbacks.forEach(callback => { callback(time) })
+  }
+
+  render () {
+    this.renderer.render(this.scene, this.camera)
   }
 
   resize () {
@@ -249,6 +253,39 @@ class THREEWrapper {
 
     this.renderer.setSize(this.width, this.height)
     this.resizeCallbacks.forEach(callback => { callback() })
+  }
+
+  initPostProcessing (passes) {
+    const size = this.renderer.getSize()
+    const pixelRatio = this.renderer.getPixelRatio()
+    size.width *= pixelRatio
+    size.height *= pixelRatio
+
+    const composer = this.composer = new THREE.EffectComposer(this.renderer, new THREE.WebGLRenderTarget(size.width, size.height, {
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      format: THREE.RGBAFormat,
+      stencilBuffer: false
+    }))
+
+    const renderPass = new THREE.RenderPass(this.scene, this.camera)
+    composer.addPass(renderPass)
+
+    for (let i = 0; i < passes.length; i++) {
+      const pass = passes[i]
+      pass.renderToScreen = (i === passes.length - 1)
+      composer.addPass(pass)
+    }
+
+    this.renderer.autoClear = false
+    this.render = () => {
+      this.renderer.clear()
+      composer.render()
+    }
+
+    this.addResizeCallback(() => {
+      composer.setSize(window.innerWidth * pixelRatio, window.innerHeight * pixelRatio)
+    })
   }
 
   checkPointer ({ x, y }, meshs, handler, nohandler) {
