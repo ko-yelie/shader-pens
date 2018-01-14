@@ -113,35 +113,78 @@ function init (textureBefore, textureAfter) {
 
   root.add(mesh)
 
+  let time = 0
+
+  const postShader = new THREE.ShaderPass({
+    uniforms: {
+      'tDiffuse': { type: 't', value: null },
+      'uTime': { type: 'f', value: time },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+
+      void main () {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uTime;
+      varying vec2 vUv;
+      const float interval = 10.;
+      const float delay = 1.5;
+      const float size = 0.03;
+      const float halfSize = size * 0.5;
+      const float n = size * 4.;
+      const float brightness = 600.;
+      const float speed = 0.006;
+
+      vec4 getMosaicColor (vec2 coord) {
+        return texture2D(tDiffuse, coord);
+        // vec4 mosaicColor = vec4(0.);
+        // for (float x = 0.; x <= size; x += size * 0.2) {
+        //   for (float y = 0.; y <= size; y += size * 0.2) {
+        //     mosaicColor += texture2D(tDiffuse, vec2(coord.x + x, coord.y + y));
+        //   }
+        // }
+        // return mosaicColor;
+      }
+
+      float lengthN (vec2 v, float n) {
+        vec2 tmp = pow(abs(v), vec2(n));
+        return pow(tmp.x + tmp.y, size / n);
+      }
+
+      float random (vec2 st) {
+        return fract(sin(dot(st, vec2(12.9898, 4.1414))) * 43758.5453);
+      }
+
+      void main () {
+        vec4 texel = texture2D(tDiffuse, vUv);
+        vec2 mosaicCoord = floor(vUv / size) * size + halfSize;
+        vec4 mosaicColor = getMosaicColor(mosaicCoord);
+        vec2 p = mod(vUv, size) - halfSize;
+        float tTime = mod(uTime / 100., interval + delay) - delay;
+        float mosaicBrightness = mosaicColor.r * mosaicColor.g * mosaicColor.b;
+        float isBlink = step(0.0005, mosaicBrightness);
+        // float isBlink = step(0.02, mosaicBrightness / 36.);
+        float l = (1. - clamp(lengthN(p, n), 0., 1.)) * isBlink * step(vUv.y, 0.5) * step(0., tTime);
+        float time = uTime * speed;
+        float n = random(mosaicCoord) * 10.;
+        float blink = l * brightness * max(sin(time + n) - 0.99, 0.);
+        gl_FragColor = texel + vec4(vec3(blink), 1.);
+      }
+    `,
+  })
   root.initPostProcessing([
-    new THREE.ShaderPass({
-      uniforms: {
-        'tDiffuse': { type: 't', value: null },
-      },
-      vertexShader: `
-        varying vec2 vUv;
-
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D tDiffuse;
-        varying vec2 vUv;
-
-        void main() {
-          vec4 texel = texture2D( tDiffuse, vUv );
-          // texel.r = 1.;
-          gl_FragColor = texel;
-        }
-      `,
-    })
+    postShader
   ])
 
-  let time = 0
   root.addUpdateCallback(() => {
-    material.uniforms['uTime'].value = time++
+    time++
+    material.uniforms['uTime'].value = time
+    postShader.uniforms['uTime'].value = time
   })
 
   root.start()
