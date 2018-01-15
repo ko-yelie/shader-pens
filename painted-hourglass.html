@@ -6,6 +6,13 @@ body {
 body {
   overflow: hidden;
   margin: 0;
+  background-color: #000;
+}
+canvas {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
 }
 </style>
 
@@ -30,7 +37,8 @@ function init (textureBefore, textureAfter) {
   const intervalY = height / PREFAB.HEIGHT
 
   const root = new THREERoot({
-    cameraPosition: [0, 0, width * 2.5]
+    cameraPosition: [0, 0, width * 2.5],
+    aspect: 0.6 / 1
   })
 
   const prefab = new THREE.PlaneGeometry(PREFAB.WIDTH, PREFAB.HEIGHT)
@@ -178,7 +186,9 @@ function init (textureBefore, textureAfter) {
     `,
   })
   root.initPostProcessing([
-    postShader
+    postShader,
+    new THREE.BloomPass(1.1, 25, 3.1, 256),
+    new THREE.ShaderPass(THREE.CopyShader)
   ])
 
   root.addUpdateCallback(() => {
@@ -242,8 +252,8 @@ class THREERoot {
     this.container = (typeof params.container === 'string') ? document.querySelector(params.container) : params.container
     this.container.appendChild(this.canvas)
 
-    this.width = this.container.clientWidth
-    this.height = this.container.clientHeight
+    this.aspect = params.aspect
+    this.setSize()
 
     // camera
     this.camera = new THREE.PerspectiveCamera(
@@ -272,6 +282,21 @@ class THREERoot {
     // pointer
     this.raycaster = new THREE.Raycaster()
     this.pointer = new THREE.Vector2()
+  }
+
+  setSize () {
+    if (this.aspect) {
+      if (this.container.clientWidth / this.container.clientHeight > this.aspect) {
+        this.width = this.container.clientHeight * this.aspect
+        this.height = this.container.clientHeight
+      } else {
+        this.width = this.container.clientWidth
+        this.height = this.container.clientWidth / this.aspect
+      }
+    } else {
+      this.width = this.container.clientWidth
+      this.height = this.container.clientHeight
+    }
   }
 
   createOrbitControls () {
@@ -346,8 +371,7 @@ class THREERoot {
   resize () {
     this.container.style.width = ''
     this.container.style.height = ''
-    this.width = this.container.clientWidth
-    this.height = this.container.clientHeight
+    this.setSize()
 
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix()
