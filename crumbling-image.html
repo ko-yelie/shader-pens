@@ -1,5 +1,10 @@
 <style>
+html,
 body {
+  height: 100%;
+}
+body {
+  overflow: hidden;
   margin: 0;
 }
 </style>
@@ -8,81 +13,78 @@ body {
 <script src="https://unpkg.com/three-bas@2.0.2/dist/bas.min.js"></script>
 
 <script>
-const TEXTURE_SRC = 'https://images.unsplash.com/photo-1430285561322-7808604715df?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&fit=max&s=2d4e47f48070250751370813eb97df80'
+const TEXTURE_SRC = 'https://images.unsplash.com/photo-1468276311594-df7cb65d8df6?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&fit=max&s=96647cd4038299342a15cd2bd177075f' // https://unsplash.com/photos/zepnJQycr4U
+const PREFAB = {
+  WIDTH: 1,
+  HEIGHT: 1
+}
 
 function init (texture) {
   const image = texture.image
   const width = image.width
   const height = image.height
+  const intervalX = width / PREFAB.WIDTH
+  const intervalY = height / PREFAB.HEIGHT
 
   const root = new THREERoot({
     cameraPosition: [0, 0, width * 1.5]
   })
 
-  const plane = new THREE.PlaneGeometry(width, height, width * 0.5, height * 0.5)
-  BAS.Utils.separateFaces(plane)
-  const geometry = new BAS.ModelBufferGeometry(plane, {
-    localizeFaces: true,
-    computeCentroids: true
-  })
-  geometry.bufferUVs()
+  const prefab = new THREE.PlaneGeometry(PREFAB.WIDTH, PREFAB.HEIGHT)
+  const geometry = new BAS.PrefabBufferGeometry(prefab, intervalX * intervalY)
+  const aPosition = geometry.createAttribute('aPosition', 4)
 
-  const aPosition = geometry.createAttribute('aPosition', 4, (data, index) => {
-    const centroid = geometry.centroids[index]
-    new THREE.Vector4(
-      centroid.x,
-      centroid.y,
-      centroid.z,
-      Math.random()
-    ).toArray(data)
-  })
+  let i = 0
+  for (let x = 0; x < intervalX; x++) {
+    for (let y = 0; y < intervalY; y++) {
+      geometry.setPrefabData(aPosition, i++, [
+        x * PREFAB.WIDTH - (width / 2),
+        y * PREFAB.HEIGHT - (height / 2),
+        0,
+        Math.random() // random coefficient
+      ])
+    }
+  }
 
   texture.minFilter = THREE.LinearFilter
 
   const material = new BAS.BasicAnimationMaterial({
     side: THREE.DoubleSide,
+    vertexColors: THREE.VertexColors,
     uniforms: {
       uTime: { type: 'f', value: 0 },
       uSize: { type: 'vf2', value: [width, height] },
-    },
-    uniformValues: {
-      map: texture,
+      map: { type: 't', value: texture },
     },
     vertexFunctions: [
-      BAS.ShaderChunk['quaternion_rotation'],
-      BAS.ShaderChunk['ease_sine_out'],
+      BAS.ShaderChunk['ease_quad_in_out'],
     ],
     vertexParameters: [
       'uniform float uTime;',
       'uniform vec2 uSize;',
       'uniform sampler2D map;',
       'attribute vec4 aPosition;',
-      'const float interval = 5.;',
-      'const float delay = 1.5;',
-      'const float speed = 5.25;',
-      'const float upSpeed = 2.63;',
+      'const float interval = 10.;',
+      'const float delay = 1.;',
+      'const float speed = 80.;',
+      'const float minWeight = 0.3;',
+      'const float fallSpeed = 4.;',
+      'const float xSpeed = 0.03;',
     ],
     vertexInit: [
-      'float tSpeed = uSize.x * speed;',
-      'float tUpSpeed = uSize.y * upSpeed;',
       'vec4 texelColor = texture2D(map, (aPosition.xy + uSize / 2.) / uSize);',
-      'float progress = max(mod(uTime / 100., interval + delay) - delay, 0.);',
-      'float colorAvg = texelColor.r * texelColor.g * texelColor.b;',
-      'float target = step(1., step(colorAvg, 0.69) + step(aPosition.y, uSize.y * 0.206) * step(abs(aPosition.x), uSize.x * 0.275));',
-      // rotate
-      'vec4 rotate = quatFromAxisAngle(vec3(aPosition.w * target), target * PI * 4. * aPosition.w * pow(colorAvg + 1., 5.) * progress);',
-      // position
-      'float distance = target * pow(colorAvg + 0.2, 2.) * progress * tSpeed;',
-      'float fall = target * pow(progress, 2.) * 4.9 * pow(1. - colorAvg, 10.) * 6.;',
-      'float rise = target * step(0.1, (1. - texelColor.r) * (1. - texelColor.g) * texelColor.b) * tUpSpeed * progress;',
+      'float tProgress = mod(uTime / 100., interval + delay) - delay;',
+      'float tMove = max(tProgress, 0.) * speed;',
+      'float weight = ((1. - texelColor.r * texelColor.g * texelColor.b) * (1. - minWeight) + minWeight) * fallSpeed;',
+      'float tFall = max(-aPosition.y - uSize.y / 2. + tMove, 0.) * (aPosition.w * 0.2 + 1.);',
+      'float y = easeQuadInOut(1. - max(-tProgress, 0.) / delay) * uSize.y * 0.66;',
     ],
     vertexPosition: [
-      // rotate
-      'transformed = rotateVector(rotate, transformed);',
-      // position
-      'transformed.x += aPosition.x + (aPosition.w - 0.5) * distance * 0.03 + aPosition.x / uSize.x * rise * 1.5;',
-      'transformed.y += aPosition.y - fall + rise;',
-      'transformed.z += aPosition.z + distance;',
+      'transformed.xy += vec2(aPosition.x / (1. + tFall * xSpeed), aPosition.y - tFall * weight - tMove + y);',
+      'transformed.z += aPosition.z;',
+    ],
+    vertexColor: [
+      'vColor = texelColor.rgb;',
     ],
   })
   material.uniforms['map'].value.needsUpdate = true
