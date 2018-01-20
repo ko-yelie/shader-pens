@@ -73,7 +73,7 @@ function init (texture) {
     ],
     vertexInit: [
       'vec4 texelColor = texture2D(map, (aPosition.xy + uSize / 2.) / uSize);',
-      'float tProgress = mod(uTime / 100., interval + delay) - delay;',
+      'float tProgress = mod(uTime / 50., interval + delay) - delay;',
       'float tMove = max(tProgress, 0.) * speed;',
       'float weight = ((1. - texelColor.r * texelColor.g * texelColor.b) * (1. - minWeight) + minWeight) * fallSpeed;',
       'float tFall = max(-aPosition.y - uSize.y / 2. + tMove, 0.) * (aPosition.w * 0.2 + 1.);',
@@ -98,8 +98,6 @@ function init (texture) {
   root.addUpdateCallback(() => {
     material.uniforms['uTime'].value = time++
   })
-
-  root.start()
 }
 
 new THREE.TextureLoader().load(TEXTURE_SRC, init)

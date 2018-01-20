@@ -30,11 +30,10 @@ const PREFAB = {
   HEIGHT: 1
 }
 
-const INTERVAL = '9.'
-const DURATION_START = '1.5'
-const DURATION_END = '1.5'
-const DELAY_START = '0.5'
-const DELAY_END = '0.5'
+const START_DELAY = 500
+const INTERVAL = '10.'
+const DURATION_START = '1.2'
+const DURATION_END = '1.2'
 
 function init (textureBefore, textureAfter) {
   const image = textureBefore.image
@@ -45,7 +44,8 @@ function init (textureBefore, textureAfter) {
 
   const root = new THREERoot({
     cameraPosition: [0, 0, width * 2.5],
-    aspect: 0.6 / 1
+    aspect: 0.6 / 1,
+    autoStart: false
   })
 
   const prefab = new THREE.PlaneGeometry(PREFAB.WIDTH, PREFAB.HEIGHT)
@@ -79,6 +79,7 @@ function init (textureBefore, textureAfter) {
     vertexFunctions: [
       BAS.ShaderChunk['ease_quad_in_out'],
       BAS.ShaderChunk['ease_quad_in'],
+      BAS.ShaderChunk['ease_quad_out'],
     ],
     vertexParameters: `
       uniform float uTime;
@@ -89,9 +90,7 @@ function init (textureBefore, textureAfter) {
       const float interval = ${INTERVAL};
       const float durationStart = ${DURATION_START};
       const float durationEnd = ${DURATION_END};
-      const float delayStart = ${DELAY_START};
-      const float delayEnd = ${DELAY_END};
-      const float totalTime = delayStart + durationStart + interval + durationEnd + delayEnd;
+      const float totalTime = durationStart + interval + durationEnd;
       const float speed = 60.;
       const float minWeight = 0.3;
       const float fallSpeed = 4.;
@@ -102,12 +101,12 @@ function init (textureBefore, textureAfter) {
       vec2 texelCoord = (aPosition.xy + uSize / 2.) / uSize;
       vec4 texelBefore = texture2D(mapBefore, texelCoord);
       vec4 texelAfter = texture2D(mapAfter, texelCoord);
-      float bottom = aPosition.y - uSize.y * 2.;
-      float time = uTime / 100.;
+      float bottom = aPosition.y - uSize.y * 1.8;
+      float time = uTime / 50.;
       float tTime = mod(time, totalTime);
       float doubleTime = mod(time, totalTime * 2.);
       float isReverse = step(totalTime, doubleTime);
-      float progress = max(tTime - (delayStart + durationStart), 0.);
+      float progress = max(tTime - durationStart, 0.);
       float nProgress = progress / interval;
       float move = progress * speed;
       float weightBefore = pow(1. - texelBefore.r * texelBefore.g * texelBefore.b, 2.) * (1. - minWeight) + minWeight;
@@ -115,8 +114,8 @@ function init (textureBefore, textureAfter) {
       float order = pow(abs(aPosition.x) / (uSize.x * 0.5), 2.) * 40.;
       float fall = max(-aPosition.y - uSize.y / 2. + move - order, 0.) * (aPosition.w * 0.2 + 1.) * (0.3 + nProgress) * fallSpeed;
       float y = aPosition.y - fall * mix(weightBefore, weightAfter, easeQuadIn(min(fall, -bottom) / -bottom)) - move + order * clamp(progress, 0., 1.);
-      float offsetY = easeQuadInOut(clamp((tTime - delayStart) / durationStart, 0., 1.)) * uSize.y * 1.2;
-      float endOffsetY = easeQuadInOut(clamp((tTime - (delayStart + durationStart + interval)) / durationEnd, 0., 1.)) * uSize.y * 0.8;
+      float offsetY = easeQuadOut(clamp(tTime / durationStart, 0., 1.)) * uSize.y * 0.9;
+      float endOffsetY = easeQuadIn(clamp((tTime - (durationStart + interval)) / durationEnd, 0., 1.)) * uSize.y * 0.9;
     `,
     vertexPosition: `
       transformed.x += aPosition.x / (1. + fall * xSpeed * max(1. - max(-y + (bottom * (1. - spreadPosition)), 0.) / (-bottom * spreadPosition), 0.));
@@ -137,7 +136,7 @@ function init (textureBefore, textureAfter) {
 
   root.add(mesh)
 
-  let time = 0
+  let time = -50
 
   const postShader = new THREE.ShaderPass({
     uniforms: {
@@ -159,9 +158,7 @@ function init (textureBefore, textureAfter) {
       const float interval = ${INTERVAL};
       const float durationStart = ${DURATION_START};
       const float durationEnd = ${DURATION_END};
-      const float delayStart = ${DELAY_START};
-      const float delayEnd = ${DELAY_END};
-      const float totalTime = delayStart + durationStart + interval + durationEnd + delayEnd;
+      const float totalTime = durationStart + interval + durationEnd;
       const float size = 0.03;
       const float halfSize = size * 0.5;
       const float n = size * 4.;
@@ -191,14 +188,14 @@ function init (textureBefore, textureAfter) {
         vec2 mosaicCoord = floor(vUv / size) * size + halfSize;
         vec4 mosaicColor = getMosaicColor(mosaicCoord);
         vec2 p = mod(vUv, size) - halfSize;
-        float time = uTime / 100.;
+        float time = uTime / 50.;
         float tTime = mod(time, totalTime);
         float doubleTime = mod(time, totalTime * 2.);
         float isReverse = step(totalTime, doubleTime);
         float mosaicBrightness = mosaicColor.r * mosaicColor.g * mosaicColor.b;
         float isBright = step(0.0005, mosaicBrightness);
         // float isBright = step(0.02, mosaicBrightness / 36.);
-        float isBlink = isBright * abs(min(step(vUv.y, 0.5) + step(0., tTime - (delayStart + durationStart + interval)), 1.) * step(delayStart + durationStart, tTime) - isReverse);
+        float isBlink = isBright * abs(min(step(vUv.y, 0.5) + step(0., tTime - (durationStart + interval)), 1.) * step(durationStart, tTime) - isReverse);
         float l = (1. - clamp(lengthN(p, n), 0., 1.)) * isBlink;
         float n = random(mosaicCoord) * 10.;
         float blink = l * brightness * max(sin(uTime * speed + n) - 0.99, 0.);
@@ -218,7 +215,11 @@ function init (textureBefore, textureAfter) {
     postShader.uniforms['uTime'].value = time
   })
 
-  root.start()
+  root.update(time)
+  root.render()
+  setTimeout(() => {
+    root.start()
+  }, START_DELAY)
 }
 
 let textureBefore, textureAfter
@@ -452,6 +453,11 @@ class THREERoot {
     }
   }
 }
+
+// --------------------
+// for Post Processing
+// copied from https://github.com/mrdoob/three.js/tree/dev/examples/js/postprocessing
+// --------------------
 
 /**
  * @author alteredq / http://alteredqualia.com/

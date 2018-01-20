@@ -71,7 +71,7 @@ function init (texture) {
       'float tSpeed = uSize.x * speed;',
       'float tUpSpeed = uSize.y * upSpeed;',
       'vec4 texelColor = texture2D(map, (aPosition.xy + uSize / 2.) / uSize);',
-      'float progress = max(mod(uTime / 100., interval + delay) - delay, 0.);',
+      'float progress = max(mod(uTime / 50., interval + delay) - delay, 0.);',
       'float colorAvg = texelColor.r * texelColor.g * texelColor.b;',
       'float target = step(1., step(colorAvg, 0.69) + step(aPosition.y, uSize.y * 0.206) * step(abs(aPosition.x), uSize.x * 0.275));',
       // rotate
@@ -101,8 +101,6 @@ function init (texture) {
   root.addUpdateCallback(() => {
     material.uniforms['uTime'].value = time++
   })
-
-  root.start()
 }
 
 new THREE.TextureLoader().load(TEXTURE_SRC, init)
