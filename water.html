@@ -24,13 +24,13 @@ body {
   varying vec2 vTexCoord;
 
   float frequency = 0.04;
-  float amplitude = 0.003;
+  float amplitude = 0.033;
   float speed = 1.2;
 
   void main() {
-    float distortionY = sin(gl_FragCoord.x * frequency + time * speed) * amplitude;
-    // float distortionX = cos(gl_FragCoord.y * frequency + time * speed) * amplitude;
-    vec4 samplerColor = texture2D(texture, vec2(vTexCoord.x, vTexCoord.y + distortionY));
+    float distortionY = 1. / sin(gl_FragCoord.x * frequency + time * speed) * amplitude;
+    float distortionX = 1. / sin(gl_FragCoord.y * frequency + time * speed) * amplitude;
+    vec4 samplerColor = texture2D(texture, vec2(vTexCoord.x + distortionX, vTexCoord.y + distortionY));
     gl_FragColor = samplerColor;
   }
 </script>
