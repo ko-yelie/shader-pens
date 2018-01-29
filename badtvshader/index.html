@@ -74,29 +74,29 @@
 			scene = new THREE.Scene();
 
 			//Load Video
-			video = document.createElement( 'video' );
-			video.loop = true;
-			video.src = "res/fits.mp4";
-			video.play();
+			// video = document.createElement( 'video' );
+			// video.loop = true;
+			// video.src = "res/fits.mp4";
+			// video.play();
 
 			//Use webcam
-			// video = document.createElement('video');
-			// video.width = 320;
-			// video.height = 240;
-			// video.autoplay = true;
-			// video.loop = true;
-			// //Webcam video
-			// window.URL = window.URL || window.webkitURL;
-			// navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-			// //get webcam
-			// navigator.getUserMedia({
-			// 	video: true
-			// }, function(stream) {
-			// 	//on webcam enabled
-			// 	video.src = window.URL.createObjectURL(stream);
-			// }, function(error) {
-			// 	prompt.innerHTML = 'Unable to capture WebCam. Please reload the page.';
-			// });
+			video = document.createElement('video');
+			video.width = 320;
+			video.height = 240;
+			video.autoplay = true;
+			video.loop = true;
+			//Webcam video
+			window.URL = window.URL || window.webkitURL;
+			navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+			//get webcam
+			navigator.getUserMedia({
+				video: true
+			}, function(stream) {
+				//on webcam enabled
+				video.src = window.URL.createObjectURL(stream);
+			}, function(error) {
+				prompt.innerHTML = 'Unable to capture WebCam. Please reload the page.';
+			});
 
 			//init video texture
 			videoTexture = new THREE.Texture( video );
