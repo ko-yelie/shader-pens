@@ -203,9 +203,110 @@ function init (textureBefore, textureAfter) {
       }
     `,
   })
+
+  const sepiaShader = new THREE.ShaderPass({
+    uniforms: {
+      'tDiffuse': { type: 't', value: null },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+
+      void main () {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      varying vec2 vUv;
+
+      const float redScale   = 0.298912;
+      const float greenScale = 0.586611;
+      const float blueScale  = 0.114478;
+      const vec3 monochromeScale = vec3(redScale, greenScale, blueScale);
+
+      const float sRedScale   = 1.07;
+      const float sGreenScale = 0.74;
+      const float sBlueScale  = 0.43;
+      const vec3 sepiaScale = vec3(sRedScale, sGreenScale, sBlueScale);
+
+      void main(void){
+        vec4 smpColor = texture2D(tDiffuse, vUv);
+        float grayColor = dot(smpColor.rgb, monochromeScale);
+        vec3 monoColor = vec3(grayColor) * sepiaScale;
+        gl_FragColor = vec4(monoColor, 1.0);
+      }
+    `,
+  })
+
+  const nightScopeShader = new THREE.ShaderPass({
+    uniforms: {
+      'tDiffuse': { type: 't', value: null },
+      'uTime': { type: 'f', value: time },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      // varying vec2 vPosition;
+
+      void main () {
+        vUv = uv;
+        // vPosition = position;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float uTime;
+      varying vec2 vUv;
+      // varying vec2 vPosition;
+
+      // 緑色（定数）
+      const vec4 greenColor = vec4(0.2, 1.0, 0.5, 1.0);
+
+      // ホワイトノイズを生成する乱数生成関数
+      float rnd(vec2 n){
+        return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+      }
+
+      void main(){
+        // スクリーン上の座標（0.0 ~ resolution）を正規化（-1.0 ~ 1.0）する @@@
+        vec2 p = vUv * 2.0 - 1.0;
+
+        // フレームバッファの描画結果をテクスチャから読み出す
+        vec4 samplerColor = texture2D(tDiffuse, vUv);
+
+        // 簡単なモノクロ化 @@@
+        // 色の平均化
+        float dest = (samplerColor.r + samplerColor.g + samplerColor.b) / 3.0;
+
+        // ビネット（四隅が暗くなるような演出） @@@
+        // 第1回の光の表現と同様
+        float vignette = 2. - length(p);
+        dest *= vignette;
+
+        // ホワイトノイズを生成 @@@
+        float noise = rnd(vUv + mod(uTime, 10.0));
+        dest *= noise * 0.5 + 0.5; // マイルド化
+
+        // ブラウン管モニタのような走査線 @@@
+        // sin(p.y): 縦方向に波線 ( * 200.0 で細かく)
+        // uTime で動かす
+        // abs で 0.0 ~ 1,0
+        //  * 0.5 + 0.5: マイルド化
+        float scanLine = abs(sin(p.y * 200.0 + uTime)) * 0.5 + 0.5;
+        dest *= scanLine;
+
+        // 様々なポストプロセスを乗算して出力する
+        gl_FragColor = greenColor * vec4(vec3(dest), 1.0);
+      }
+    `,
+  })
+
   root.initPostProcessing([
     postShader,
     new THREE.BloomPass(1.3, 25, 3.1, 256),
+    // sepiaShader,
+    // nightScopeShader,
     new THREE.ShaderPass(THREE.CopyShader)
   ])
 
@@ -213,6 +314,7 @@ function init (textureBefore, textureAfter) {
     time++
     material.uniforms['uTime'].value = time
     postShader.uniforms['uTime'].value = time
+    // nightScopeShader.uniforms['uTime'].value = time
   })
 
   root.update(time)
