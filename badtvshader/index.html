@@ -1,49 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="jp">
 <head>
-  <title>Bad TV Shader for Three.js</title>
+  <title>Dot x Glitch Shader</title>
   <meta charset="utf-8">
   <style>
-  body {
-    background-color: #000;
-    margin: 0px;
-    overflow: hidden;
-  }
-
-  #info {
-    color: #fff;
-    position: absolute;
-    bottom: 20px;
-    padding: 5px 20px;
-    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
-    font-weight: 100;
-    font-size: 18px;
-    background-color: #000;
-  }
-
-  a{
-    color: #DDD;
-  }
-
+    body {
+      background-color: #000;
+      margin: 0;
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
 
-  <div id="info">BadTV Effect for Three.js by @felixturner. Click to randomize.</div>
   <div id="container"></div>
 
-  <script src="lib/three.min.js"></script>
-  <script src='lib/dat.gui.min.js'></script>
-  <script src="lib/stats.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/88/three.min.js"></script>
   <script src="lib/postprocessing/EffectComposer.js"></script>
   <script src="lib/postprocessing/RenderPass.js"></script>
   <script src="lib/postprocessing/ShaderPass.js"></script>
   <script src="lib/postprocessing/MaskPass.js"></script>
+  <script src="lib/postprocessing/GlitchPass.js"></script>
   <script src="lib/shaders/CopyShader.js"></script>
-  <script src="lib/shaders/FilmShader.js"></script>
   <script src="lib/shaders/RGBShiftShader.js"></script>
-  <script src="js/BadTVShader.js"></script>
-  <script src="js/StaticShader.js"></script>
+  <script src="lib/shaders/DotScreenShader.js"></script>
+  <script src="lib/shaders/DigitalGlitch.js"></script>
 
   <script>
 
@@ -52,12 +33,14 @@
     //by Felix Turner / www.airtight.cc / @felixturner
     //https://www.airtightinteractive.com/demos/js/badtvshader/
 
+    var width, height;
     var camera, scene, renderer;
     var video, videoTexture,videoMaterial;
     var composer;
     var shaderTime = 0;
     var badTVParams, badTVPass;
     var staticParams, staticPass;
+    var dotScreenParams, dotScreenPass;
     var rgbParams, rgbPass;
     var filmParams, filmPass;
     var renderPass, copyPass;
@@ -69,15 +52,11 @@
 
     function init() {
 
-      camera = new THREE.PerspectiveCamera(55, 1080/ 720, 20, 3000);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      camera = new THREE.PerspectiveCamera(55, width/ height, 20, 3000);
       camera.position.z = 1000;
       scene = new THREE.Scene();
-
-      //Load Video
-      // video = document.createElement( 'video' );
-      // video.loop = true;
-      // video.src = "res/fits.mp4";
-      // video.play();
 
       //Use webcam
       video = document.createElement('video');
@@ -108,190 +87,47 @@
       } );
 
       //Add video plane
-      var planeGeometry = new THREE.PlaneGeometry( 1080, 720,1,1 );
+      var planeGeometry = new THREE.PlaneGeometry( width, height,1,1 );
       var plane = new THREE.Mesh( planeGeometry, videoMaterial );
       scene.add( plane );
       plane.z = 0;
       plane.scale.x = plane.scale.y = 1.45;
 
-      //add stats
-      stats = new Stats();
-      stats.domElement.style.position = 'absolute';
-      stats.domElement.style.top = '0px';
-      container.appendChild( stats.domElement );
-
       //init renderer
       renderer = new THREE.WebGLRenderer();
-      renderer.setSize( 800, 600 );
+      renderer.setSize( width, height );
       document.body.appendChild( renderer.domElement );
 
       //POST PROCESSING
-      //Create Shader Passes
       renderPass = new THREE.RenderPass( scene, camera );
-      badTVPass = new THREE.ShaderPass( THREE.BadTVShader );
-      rgbPass = new THREE.ShaderPass( THREE.RGBShiftShader );
-      filmPass = new THREE.ShaderPass( THREE.FilmShader );
-      staticPass = new THREE.ShaderPass( THREE.StaticShader );
+      dotScreenPass = new THREE.ShaderPass( THREE.DotScreenShader );
       copyPass = new THREE.ShaderPass( THREE.CopyShader );
+      glitchPass = new THREE.GlitchPass();
 
-      //set shader uniforms
-      filmPass.uniforms[ "grayscale" ].value = 0;
-
-      //Init DAT GUI control panel
-      badTVParams = {
-        mute:true,
-        show: true,
-        distortion: 3.0,
-        distortion2: 1.0,
-        speed: 0.3,
-        rollSpeed: 0.1
-      }
-
-      staticParams = {
-        show: true,
-        amount:0.5,
-        size2:4.0
-      }
-
-      rgbParams = {
-        show: true,
-        amount: 0.005,
-        angle: 0.0,
-      }
-
-      filmParams = {
-        show: true,
-        count: 800,
-        sIntensity: 0.9,
-        nIntensity: 0.4
-      }
-
-      gui = new dat.GUI();
-
-      gui.add(badTVParams, 'mute').onChange(onToggleMute);
-
-      var f1 = gui.addFolder('Bad TV');
-      f1.add(badTVParams, 'show').onChange(onToggleShaders);
-      f1.add(badTVParams, 'distortion', 0.1, 20).step(0.1).listen().name("Thick Distort").onChange(onParamsChange);
-      f1.add(badTVParams, 'distortion2', 0.1, 20).step(0.1).listen().name("Fine Distort").onChange(onParamsChange);
-      f1.add(badTVParams, 'speed', 0.0,1.0).step(0.01).listen().name("Distort Speed").onChange(onParamsChange);
-      f1.add(badTVParams, 'rollSpeed', 0.0,1.0).step(0.01).listen().name("Roll Speed").onChange(onParamsChange);
-      f1.open();
-
-      var f2 = gui.addFolder('RGB Shift');
-      f2.add(rgbParams, 'show').onChange(onToggleShaders);
-      f2.add(rgbParams, 'amount', 0.0, 0.1).listen().onChange(onParamsChange);
-      f2.add(rgbParams, 'angle', 0.0, 2.0).listen().onChange(onParamsChange);
-      f2.open();
-
-      var f4 = gui.addFolder('Static');
-      f4.add(staticParams, 'show').onChange(onToggleShaders);
-      f4.add(staticParams, 'amount', 0.0,1.0).step(0.01).listen().onChange(onParamsChange);
-      f4.add(staticParams, 'size2', 1.0,100.0).step(1.0).onChange(onParamsChange);
-      f4.open();
-
-      var f3 = gui.addFolder('Scanlines');
-      f3.add(filmParams, 'show').onChange(onToggleShaders);
-      f3.add(filmParams, 'count', 50, 1000).onChange(onParamsChange);
-      f3.add(filmParams, 'sIntensity', 0.0, 2.0).step(0.1).onChange(onParamsChange);
-      f3.add(filmParams, 'nIntensity', 0.0, 2.0).step(0.1).onChange(onParamsChange);
-      f3.open();
-
-      gui.close();
+      dotScreenPass.uniforms[ "scale" ].value = 0.5;
 
       onToggleShaders();
-      onToggleMute();
-      onParamsChange();
 
       window.addEventListener('resize', onResize, false);
-      renderer.domElement.addEventListener('click', randomizeParams, false);
       onResize();
-      randomizeParams();
-    }
-
-    function onParamsChange() {
-      //copy gui params into shader uniforms
-      badTVPass.uniforms[ "distortion" ].value = badTVParams.distortion;
-      badTVPass.uniforms[ "distortion2" ].value = badTVParams.distortion2;
-      badTVPass.uniforms[ "speed" ].value = badTVParams.speed;
-      badTVPass.uniforms[ "rollSpeed" ].value = badTVParams.rollSpeed;
-
-      staticPass.uniforms[ "amount" ].value = staticParams.amount;
-      staticPass.uniforms[ "size" ].value = staticParams.size2;
-
-      rgbPass.uniforms[ "angle" ].value = rgbParams.angle*Math.PI;
-      rgbPass.uniforms[ "amount" ].value = rgbParams.amount;
-
-      filmPass.uniforms[ "sCount" ].value = filmParams.count;
-      filmPass.uniforms[ "sIntensity" ].value = filmParams.sIntensity;
-      filmPass.uniforms[ "nIntensity" ].value = filmParams.nIntensity;
-    }
-
-
-    function randomizeParams() {
-
-      if (Math.random() <0.2){
-        //you fixed it!
-        badTVParams.distortion = 0.1;
-        badTVParams.distortion2 =0.1;
-        badTVParams.speed =0;
-        badTVParams.rollSpeed =0;
-        rgbParams.angle = 0;
-        rgbParams.amount = 0;
-        staticParams.amount = 0;
-
-      }else{
-        badTVParams.distortion = Math.random()*10+0.1;
-        badTVParams.distortion2 =Math.random()*10+0.1;
-        badTVParams.speed =Math.random()*.4;
-        badTVParams.rollSpeed =Math.random()*.2;
-        rgbParams.angle = Math.random()*2;
-        rgbParams.amount = Math.random()*0.03;
-        staticParams.amount = Math.random()*0.2;
-      }
-
-      onParamsChange();
-    }
-
-
-
-    function onToggleMute(){
-      video.volume  = badTVParams.mute ? 0 : 1;
     }
 
     function onToggleShaders(){
-
-      //Add Shader Passes to Composer
-      //order is important
       composer = new THREE.EffectComposer( renderer);
       composer.addPass( renderPass );
 
-      if (filmParams.show){
-        composer.addPass( filmPass );
-      }
+      composer.addPass( dotScreenPass );
+      composer.addPass( glitchPass );
+      glitchPass.renderToScreen = true;
 
-      if (badTVParams.show){
-        composer.addPass( badTVPass );
-      }
-
-      if (rgbParams.show){
-        composer.addPass( rgbPass );
-      }
-
-      if (staticParams.show){
-        composer.addPass( staticPass );
-      }
-
-      composer.addPass( copyPass );
-      copyPass.renderToScreen = true;
+      // composer.addPass( copyPass );
+      // copyPass.renderToScreen = true;
     }
 
     function animate() {
-
       shaderTime += 0.1;
-      badTVPass.uniforms[ 'time' ].value =  shaderTime;
-      filmPass.uniforms[ 'time' ].value =  shaderTime;
-      staticPass.uniforms[ 'time' ].value =  shaderTime;
+
+      dotScreenPass.uniforms[ 'time' ].value =  shaderTime;
 
       if ( video.readyState === video.HAVE_ENOUGH_DATA ) {
         if ( videoTexture ) videoTexture.needsUpdate = true;
@@ -299,7 +135,6 @@
 
       requestAnimationFrame( animate );
       composer.render( 0.1);
-      stats.update();
     }
 
     function onResize() {
@@ -307,7 +142,6 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
     }
-
   </script>
 </body>
 </html>
