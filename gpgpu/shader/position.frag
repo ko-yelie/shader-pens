@@ -2,19 +2,10 @@
  * position update shader
  * ---------------------------------------------------------------------------- */
 precision mediump float;
-uniform sampler2D prevTexture;
-uniform sampler2D velocityTexture;
+uniform sampler2D videoTexture;
 uniform vec2      resolution;
-uniform bool      move;
-const   float     SPEED = 0.1;
 void main(){
     vec2 coord = gl_FragCoord.st / resolution;
-    vec4 prevPosition = texture2D(prevTexture, coord);
-    vec4 velocity = texture2D(velocityTexture, coord);
-    float power = prevPosition.w * 0.95;
-    if(move){
-        power = 1.0;
-    }
-    vec3 position = prevPosition.xyz + velocity.xyz * power * SPEED;
-    gl_FragColor = vec4(position, power);
+    vec4 video = texture2D(videoTexture, coord);
+    gl_FragColor = video;
 }
