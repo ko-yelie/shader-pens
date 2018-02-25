@@ -13,14 +13,12 @@
 
     let scenePrg;
     let resetPrg;
-    let positionPrg;
-    let velocityPrg;
+    let videoPrg;
+    let picturePrg;
 
     let POINT_RESOLUTION      = 256;
-    const POINT_SIZE            = 2.0;
-    const POINT_COLOR           = [0.1, 0.3, 0.6, 0.5];
-    const POSITION_BUFFER_INDEX = 1;
-    const VELOCITY_BUFFER_INDEX = 3;
+    const VIDEO_BUFFER_INDEX = 1;
+    const PICTURE_BUFFER_INDEX = 3;
 
     window.addEventListener('load', () => {
         // canvas element を取得しサイズをウィンドウサイズに設定
@@ -98,7 +96,7 @@
                     let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
                     let prg = createProgram(vs, fs);
                     if(prg == null){return;}
-                    positionPrg = new ProgramParameter(prg);
+                    videoPrg = new ProgramParameter(prg);
                     loadCheck();
                 }
             );
@@ -110,7 +108,7 @@
                     let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
                     let prg = createProgram(vs, fs);
                     if(prg == null){return;}
-                    velocityPrg = new ProgramParameter(prg);
+                    picturePrg = new ProgramParameter(prg);
                     loadCheck();
                 }
             );
@@ -120,8 +118,8 @@
             if(
                 scenePrg != null &&
                 resetPrg != null &&
-                positionPrg != null &&
-                velocityPrg != null &&
+                videoPrg != null &&
+                picturePrg != null &&
                 true
             ){initWebcam();}
         }
@@ -129,9 +127,8 @@
 
     function initWebcam(){
         var video = document.createElement('video');
-        video.width = 640;
-        video.height = canvasHeight * (640 / canvasWidth);
-        // video.autoplay = true;
+        video.width = POINT_RESOLUTION;
+        video.height = POINT_RESOLUTION;
         video.loop = true;
         //Webcam video
         window.URL = window.URL || window.webkitURL;
@@ -159,18 +156,12 @@
     function init(video){
         scenePrg.attLocation[0] = gl.getAttribLocation(scenePrg.program, 'position');
         scenePrg.attStride[0]   = 3;
-        scenePrg.uniLocation[0] = gl.getUniformLocation(scenePrg.program, 'mvpMatrix');
-        scenePrg.uniLocation[1] = gl.getUniformLocation(scenePrg.program, 'pointSize');
-        scenePrg.uniLocation[2] = gl.getUniformLocation(scenePrg.program, 'prevTexture');
-        scenePrg.uniLocation[3] = gl.getUniformLocation(scenePrg.program, 'globalColor');
-        scenePrg.uniLocation[4] = gl.getUniformLocation(scenePrg.program, 'currentTexture');
-        scenePrg.uniLocation[5] = gl.getUniformLocation(scenePrg.program, 'resolution');
-        scenePrg.uniType[0]     = 'uniformMatrix4fv';
-        scenePrg.uniType[1]     = 'uniform1f';
+        // scenePrg.uniLocation[0] = gl.getUniformLocation(scenePrg.program, 'mvpMatrix');
+        scenePrg.uniLocation[1] = gl.getUniformLocation(scenePrg.program, 'resolution');
+        scenePrg.uniLocation[2] = gl.getUniformLocation(scenePrg.program, 'pictureTexture');
+        // scenePrg.uniType[0]     = 'uniformMatrix4fv';
+        scenePrg.uniType[1]     = 'uniform2fv';
         scenePrg.uniType[2]     = 'uniform1i';
-        scenePrg.uniType[3]     = 'uniform4fv';
-        scenePrg.uniType[4]     = 'uniform1i';
-        scenePrg.uniType[5]     = 'uniform2fv';
 
         resetPrg.attLocation[0] = gl.getAttribLocation(resetPrg.program, 'position');
         resetPrg.attStride[0]   = 3;
@@ -179,23 +170,23 @@
         resetPrg.uniType[0]     = 'uniform2fv';
         resetPrg.uniType[1]     = 'uniform1i';
 
-        positionPrg.attLocation[0] = gl.getAttribLocation(positionPrg.program, 'position');
-        positionPrg.attStride[0]   = 3;
-        positionPrg.uniLocation[0] = gl.getUniformLocation(positionPrg.program, 'prevTexture');
-        positionPrg.uniLocation[1] = gl.getUniformLocation(positionPrg.program, 'videoTexture');
-        positionPrg.uniLocation[2] = gl.getUniformLocation(positionPrg.program, 'resolution');
-        positionPrg.uniType[0]     = 'uniform1i';
-        positionPrg.uniType[1]     = 'uniform1i';
-        positionPrg.uniType[2]     = 'uniform2fv';
+        videoPrg.attLocation[0] = gl.getAttribLocation(videoPrg.program, 'position');
+        videoPrg.attStride[0]   = 3;
+        videoPrg.uniLocation[0] = gl.getUniformLocation(videoPrg.program, 'resolution');
+        videoPrg.uniLocation[1] = gl.getUniformLocation(videoPrg.program, 'videoTexture');
+        videoPrg.uniType[0]     = 'uniform2fv';
+        videoPrg.uniType[1]     = 'uniform1i';
 
-        velocityPrg.attLocation[0] = gl.getAttribLocation(velocityPrg.program, 'position');
-        velocityPrg.attStride[0]   = 3;
-        velocityPrg.uniLocation[0] = gl.getUniformLocation(velocityPrg.program, 'prevTexture');
-        velocityPrg.uniLocation[1] = gl.getUniformLocation(velocityPrg.program, 'videoTexture');
-        velocityPrg.uniLocation[2] = gl.getUniformLocation(velocityPrg.program, 'resolution');
-        velocityPrg.uniType[0]     = 'uniform1i';
-        velocityPrg.uniType[1]     = 'uniform1i';
-        velocityPrg.uniType[2]     = 'uniform2fv';
+        picturePrg.attLocation[0] = gl.getAttribLocation(picturePrg.program, 'position');
+        picturePrg.attStride[0]   = 3;
+        picturePrg.uniLocation[0] = gl.getUniformLocation(picturePrg.program, 'resolution');
+        picturePrg.uniLocation[1] = gl.getUniformLocation(picturePrg.program, 'videoTexture');
+        picturePrg.uniLocation[2] = gl.getUniformLocation(picturePrg.program, 'prevVideoTexture');
+        picturePrg.uniLocation[3] = gl.getUniformLocation(picturePrg.program, 'prevPictureTexture');
+        picturePrg.uniType[0]     = 'uniform2fv';
+        picturePrg.uniType[1]     = 'uniform1i';
+        picturePrg.uniType[2]     = 'uniform1i';
+        picturePrg.uniType[3]     = 'uniform1i';
 
         let pointTexCoord = [];
         for(let i = 0; i < POINT_RESOLUTION; ++i){
@@ -241,26 +232,24 @@
         mat.multiply(pMatrix, vMatrix, vpMatrix);
 
         // framebuffer
-        let positionFramebuffers = [
+        let videoFramebuffers = [
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION),
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION)
         ];
-        let velocityFramebuffers = [
+        let pictureFramebuffers = [
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION),
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION)
         ];
 
         // textures
-        // gl.activeTexture(gl.TEXTURE0);
-        // gl.bindTexture(gl.TEXTURE_2D, textures[0]);
-        gl.activeTexture(gl.TEXTURE0 + POSITION_BUFFER_INDEX);
-        gl.bindTexture(gl.TEXTURE_2D, positionFramebuffers[0].texture);
-        gl.activeTexture(gl.TEXTURE0 + POSITION_BUFFER_INDEX + 1);
-        gl.bindTexture(gl.TEXTURE_2D, positionFramebuffers[1].texture);
-        gl.activeTexture(gl.TEXTURE0 + VELOCITY_BUFFER_INDEX);
-        gl.bindTexture(gl.TEXTURE_2D, velocityFramebuffers[0].texture);
-        gl.activeTexture(gl.TEXTURE0 + VELOCITY_BUFFER_INDEX + 1);
-        gl.bindTexture(gl.TEXTURE_2D, velocityFramebuffers[1].texture);
+        gl.activeTexture(gl.TEXTURE0 + VIDEO_BUFFER_INDEX);
+        gl.bindTexture(gl.TEXTURE_2D, videoFramebuffers[0].texture);
+        gl.activeTexture(gl.TEXTURE0 + VIDEO_BUFFER_INDEX + 1);
+        gl.bindTexture(gl.TEXTURE_2D, videoFramebuffers[1].texture);
+        gl.activeTexture(gl.TEXTURE0 + PICTURE_BUFFER_INDEX);
+        gl.bindTexture(gl.TEXTURE_2D, pictureFramebuffers[0].texture);
+        gl.activeTexture(gl.TEXTURE0 + PICTURE_BUFFER_INDEX + 1);
+        gl.bindTexture(gl.TEXTURE_2D, pictureFramebuffers[1].texture);
 
         // reset framebuffers
         gl.useProgram(resetPrg.program);
@@ -269,13 +258,8 @@
         setAttribute(planeVBO, resetPrg.attLocation, resetPrg.attStride, planeIBO);
         gl.viewport(0, 0, POINT_RESOLUTION, POINT_RESOLUTION);
         for(let i = 0; i <= 1; ++i){
-            // position buffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, positionFramebuffers[i].framebuffer);
-            gl.clearColor(0.0, 0.0, 0.0, 0.0);
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
-            // velocity buffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, velocityFramebuffers[i].framebuffer);
+            // video buffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, videoFramebuffers[i].framebuffer);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
@@ -287,14 +271,14 @@
         gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE, gl.ONE, gl.ONE);
 
         // setting
-        let startTime = Date.now();
-        let nowTime = 0;
+        // let startTime = Date.now();
+        // let nowTime = 0;
         let loopCount = 0;
         run = true;
         render();
 
         function render(){
-            nowTime = (Date.now() - startTime) / 1000;
+            // nowTime = (Date.now() - startTime) / 1000;
             ++loopCount;
             let targetBufferIndex = loopCount % 2;
             let prevBufferIndex = 1 - targetBufferIndex;
@@ -303,7 +287,6 @@
             var videoTexture = gl.createTexture(gl.TEXTURE_2D);
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, videoTexture);
-            //	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -313,22 +296,23 @@
             // update gpgpu buffers -------------------------------------------
             gl.disable(gl.BLEND);
             gl.viewport(0, 0, POINT_RESOLUTION, POINT_RESOLUTION);
-            // velocity update
-            gl.useProgram(velocityPrg.program);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, velocityFramebuffers[targetBufferIndex].framebuffer);
-            setAttribute(planeVBO, velocityPrg.attLocation, velocityPrg.attStride, planeIBO);
-            gl[velocityPrg.uniType[0]](velocityPrg.uniLocation[0], VELOCITY_BUFFER_INDEX + prevBufferIndex);
-            gl[velocityPrg.uniType[1]](velocityPrg.uniLocation[1], 0);
-            gl[velocityPrg.uniType[2]](velocityPrg.uniLocation[2], [POINT_RESOLUTION, POINT_RESOLUTION]);
+
+            // video update
+            gl.useProgram(videoPrg.program);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, videoFramebuffers[targetBufferIndex].framebuffer);
+            setAttribute(planeVBO, videoPrg.attLocation, videoPrg.attStride, planeIBO);
+            gl[videoPrg.uniType[0]](videoPrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
+            gl[videoPrg.uniType[1]](videoPrg.uniLocation[1], 0);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
 
-            // position update
-            gl.useProgram(positionPrg.program);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, positionFramebuffers[targetBufferIndex].framebuffer);
-            setAttribute(planeVBO, positionPrg.attLocation, positionPrg.attStride, planeIBO);
-            gl[positionPrg.uniType[0]](positionPrg.uniLocation[0], POSITION_BUFFER_INDEX + prevBufferIndex);
-            gl[positionPrg.uniType[1]](positionPrg.uniLocation[1], 0);
-            gl[positionPrg.uniType[2]](positionPrg.uniLocation[2], [POINT_RESOLUTION, POINT_RESOLUTION]);
+            // picture update
+            gl.useProgram(picturePrg.program);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, pictureFramebuffers[targetBufferIndex].framebuffer);
+            setAttribute(planeVBO, picturePrg.attLocation, picturePrg.attStride);
+            gl[picturePrg.uniType[0]](picturePrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
+            gl[picturePrg.uniType[1]](picturePrg.uniLocation[1], VIDEO_BUFFER_INDEX + targetBufferIndex);
+            gl[picturePrg.uniType[2]](picturePrg.uniLocation[2], VIDEO_BUFFER_INDEX + prevBufferIndex);
+            gl[picturePrg.uniType[3]](picturePrg.uniLocation[3], PICTURE_BUFFER_INDEX + prevBufferIndex);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
 
             // render to canvas -------------------------------------------
@@ -342,15 +326,12 @@
             gl.viewport(0, 0, canvasWidth, canvasHeight);
 
             // push and render
-            mat.identity(mMatrix);
+            // mat.identity(mMatrix);
             // mat.rotate(mMatrix, nowTime * 0.05, [0.0, 1.0, 0.0], mMatrix);
-            mat.multiply(vpMatrix, mMatrix, mvpMatrix);
-            gl[scenePrg.uniType[0]](scenePrg.uniLocation[0], false, mvpMatrix);
-            gl[scenePrg.uniType[1]](scenePrg.uniLocation[1], POINT_SIZE);
-            gl[scenePrg.uniType[2]](scenePrg.uniLocation[2], POSITION_BUFFER_INDEX + prevBufferIndex);
-            gl[scenePrg.uniType[3]](scenePrg.uniLocation[3], POINT_COLOR);
-            gl[scenePrg.uniType[4]](scenePrg.uniLocation[4], POSITION_BUFFER_INDEX + targetBufferIndex);
-            gl[scenePrg.uniType[5]](scenePrg.uniLocation[5], [POINT_RESOLUTION, POINT_RESOLUTION]);
+            // mat.multiply(vpMatrix, mMatrix, mvpMatrix);
+            // gl[scenePrg.uniType[0]](scenePrg.uniLocation[0], false, mvpMatrix);
+            gl[scenePrg.uniType[1]](scenePrg.uniLocation[1], [POINT_RESOLUTION, POINT_RESOLUTION]);
+            gl[scenePrg.uniType[2]](scenePrg.uniLocation[2], PICTURE_BUFFER_INDEX + targetBufferIndex);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
 
             gl.flush();
