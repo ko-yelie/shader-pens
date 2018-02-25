@@ -89,8 +89,8 @@
                 }
             );
             loadShaderSource(
-                './shader/position.vert',
-                './shader/position.frag',
+                './shader/video.vert',
+                './shader/video.frag',
                 (shader) => {
                     let vs = createShader(shader.vs, gl.VERTEX_SHADER);
                     let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
@@ -101,8 +101,8 @@
                 }
             );
             loadShaderSource(
-                './shader/velocity.vert',
-                './shader/velocity.frag',
+                './shader/picture.vert',
+                './shader/picture.frag',
                 (shader) => {
                     let vs = createShader(shader.vs, gl.VERTEX_SHADER);
                     let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
