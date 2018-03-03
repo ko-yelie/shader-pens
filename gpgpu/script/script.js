@@ -18,7 +18,7 @@
 
     let POINT_RESOLUTION      = 256;
     const VIDEO_BUFFER_INDEX = 1;
-    const PICTURE_BUFFER_INDEX = 3;
+    const PICTURE_BUFFER_INDEX = 4;
 
     window.addEventListener('load', () => {
         // canvas element を取得しサイズをウィンドウサイズに設定
@@ -180,13 +180,17 @@
         picturePrg.attLocation[0] = gl.getAttribLocation(picturePrg.program, 'position');
         picturePrg.attStride[0]   = 3;
         picturePrg.uniLocation[0] = gl.getUniformLocation(picturePrg.program, 'resolution');
-        picturePrg.uniLocation[1] = gl.getUniformLocation(picturePrg.program, 'videoTexture');
-        picturePrg.uniLocation[2] = gl.getUniformLocation(picturePrg.program, 'prevVideoTexture');
-        picturePrg.uniLocation[3] = gl.getUniformLocation(picturePrg.program, 'prevPictureTexture');
+        picturePrg.uniLocation[1] = gl.getUniformLocation(picturePrg.program, 'prevPictureTexture');
+        picturePrg.uniLocation[2] = gl.getUniformLocation(picturePrg.program, 'videoTexture');
+        picturePrg.uniLocation[3] = gl.getUniformLocation(picturePrg.program, 'prevVideoTexture');
+        picturePrg.uniLocation[4] = gl.getUniformLocation(picturePrg.program, 'prevVideoTexture2');
+        picturePrg.uniLocation[5] = gl.getUniformLocation(picturePrg.program, 'prevVideoTexture3');
         picturePrg.uniType[0]     = 'uniform2fv';
         picturePrg.uniType[1]     = 'uniform1i';
         picturePrg.uniType[2]     = 'uniform1i';
         picturePrg.uniType[3]     = 'uniform1i';
+        picturePrg.uniType[4]     = 'uniform1i';
+        picturePrg.uniType[5]     = 'uniform1i';
 
         let pointTexCoord = [];
         for(let i = 0; i < POINT_RESOLUTION; ++i){
@@ -234,6 +238,7 @@
         // framebuffer
         let videoFramebuffers = [
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION),
+            createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION),
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION)
         ];
         let pictureFramebuffers = [
@@ -246,6 +251,8 @@
         gl.bindTexture(gl.TEXTURE_2D, videoFramebuffers[0].texture);
         gl.activeTexture(gl.TEXTURE0 + VIDEO_BUFFER_INDEX + 1);
         gl.bindTexture(gl.TEXTURE_2D, videoFramebuffers[1].texture);
+        gl.activeTexture(gl.TEXTURE0 + VIDEO_BUFFER_INDEX + 2);
+        gl.bindTexture(gl.TEXTURE_2D, videoFramebuffers[2].texture);
         gl.activeTexture(gl.TEXTURE0 + PICTURE_BUFFER_INDEX);
         gl.bindTexture(gl.TEXTURE_2D, pictureFramebuffers[0].texture);
         gl.activeTexture(gl.TEXTURE0 + PICTURE_BUFFER_INDEX + 1);
@@ -257,7 +264,7 @@
         gl[resetPrg.uniType[1]](resetPrg.uniLocation[1], 0);
         setAttribute(planeVBO, resetPrg.attLocation, resetPrg.attStride, planeIBO);
         gl.viewport(0, 0, POINT_RESOLUTION, POINT_RESOLUTION);
-        for(let i = 0; i <= 1; ++i){
+        for(let i = 0; i <= 2; ++i){
             // video buffer
             gl.bindFramebuffer(gl.FRAMEBUFFER, videoFramebuffers[i].framebuffer);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -298,8 +305,16 @@
             gl.viewport(0, 0, POINT_RESOLUTION, POINT_RESOLUTION);
 
             // video update
+            for (var i = 2; i >= 1; i--) {
+              gl.useProgram(videoPrg.program);
+              gl.bindFramebuffer(gl.FRAMEBUFFER, videoFramebuffers[i].framebuffer);
+              setAttribute(planeVBO, videoPrg.attLocation, videoPrg.attStride, planeIBO);
+              gl[videoPrg.uniType[0]](videoPrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
+              gl[videoPrg.uniType[1]](videoPrg.uniLocation[1], VIDEO_BUFFER_INDEX + (i - 1));
+              gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
+            }
             gl.useProgram(videoPrg.program);
-            gl.bindFramebuffer(gl.FRAMEBUFFER, videoFramebuffers[targetBufferIndex].framebuffer);
+            gl.bindFramebuffer(gl.FRAMEBUFFER, videoFramebuffers[0].framebuffer);
             setAttribute(planeVBO, videoPrg.attLocation, videoPrg.attStride, planeIBO);
             gl[videoPrg.uniType[0]](videoPrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
             gl[videoPrg.uniType[1]](videoPrg.uniLocation[1], 0);
@@ -310,9 +325,11 @@
             gl.bindFramebuffer(gl.FRAMEBUFFER, pictureFramebuffers[targetBufferIndex].framebuffer);
             setAttribute(planeVBO, picturePrg.attLocation, picturePrg.attStride);
             gl[picturePrg.uniType[0]](picturePrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
-            gl[picturePrg.uniType[1]](picturePrg.uniLocation[1], VIDEO_BUFFER_INDEX + targetBufferIndex);
-            gl[picturePrg.uniType[2]](picturePrg.uniLocation[2], VIDEO_BUFFER_INDEX + prevBufferIndex);
-            gl[picturePrg.uniType[3]](picturePrg.uniLocation[3], PICTURE_BUFFER_INDEX + prevBufferIndex);
+            gl[picturePrg.uniType[1]](picturePrg.uniLocation[1], PICTURE_BUFFER_INDEX + prevBufferIndex);
+            gl[picturePrg.uniType[2]](picturePrg.uniLocation[2], VIDEO_BUFFER_INDEX + targetBufferIndex);
+            gl[picturePrg.uniType[3]](picturePrg.uniLocation[3], VIDEO_BUFFER_INDEX);
+            gl[picturePrg.uniType[4]](picturePrg.uniLocation[4], VIDEO_BUFFER_INDEX + 1);
+            gl[picturePrg.uniType[5]](picturePrg.uniLocation[5], VIDEO_BUFFER_INDEX + 2);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
 
             // render to canvas -------------------------------------------
