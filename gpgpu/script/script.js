@@ -12,7 +12,6 @@
     let isMouseDown = false;
 
     let scenePrg;
-    let resetPrg;
     let videoPrg;
     let picturePrg;
 
@@ -59,65 +58,47 @@
             mouse = [x, -y];
         }, false);
 
-        // シェーダやテクスチャなどの外部リソースを取得
-        createTexture('./image/lenna.jpg', (textureObject) => {
-            // テクスチャ用画像が非同期で読み込まれたあと引数経由で渡されるので配列に格納
-            textures[0] = textureObject;
-            // 外部ファイルのシェーダのソースを取得しプログラムオブジェクトを生成
-            loadShaderSource(
-                './shader/scene.vert',
-                './shader/scene.frag',
-                (shader) => {
-                    let vs = createShader(shader.vs, gl.VERTEX_SHADER);
-                    let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
-                    let prg = createProgram(vs, fs);
-                    if(prg == null){return;}
-                    scenePrg = new ProgramParameter(prg);
-                    loadCheck();
-                }
-            );
-            loadShaderSource(
-                './shader/reset.vert',
-                './shader/reset.frag',
-                (shader) => {
-                    let vs = createShader(shader.vs, gl.VERTEX_SHADER);
-                    let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
-                    let prg = createProgram(vs, fs);
-                    if(prg == null){return;}
-                    resetPrg = new ProgramParameter(prg);
-                    loadCheck();
-                }
-            );
-            loadShaderSource(
-                './shader/video.vert',
-                './shader/video.frag',
-                (shader) => {
-                    let vs = createShader(shader.vs, gl.VERTEX_SHADER);
-                    let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
-                    let prg = createProgram(vs, fs);
-                    if(prg == null){return;}
-                    videoPrg = new ProgramParameter(prg);
-                    loadCheck();
-                }
-            );
-            loadShaderSource(
-                './shader/picture.vert',
-                './shader/picture.frag',
-                (shader) => {
-                    let vs = createShader(shader.vs, gl.VERTEX_SHADER);
-                    let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
-                    let prg = createProgram(vs, fs);
-                    if(prg == null){return;}
-                    picturePrg = new ProgramParameter(prg);
-                    loadCheck();
-                }
-            );
-        });
+        // 外部ファイルのシェーダのソースを取得しプログラムオブジェクトを生成
+        loadShaderSource(
+            './shader/scene.vert',
+            './shader/scene.frag',
+            (shader) => {
+                let vs = createShader(shader.vs, gl.VERTEX_SHADER);
+                let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
+                let prg = createProgram(vs, fs);
+                if(prg == null){return;}
+                scenePrg = new ProgramParameter(prg);
+                loadCheck();
+            }
+        );
+        loadShaderSource(
+            './shader/video.vert',
+            './shader/video.frag',
+            (shader) => {
+                let vs = createShader(shader.vs, gl.VERTEX_SHADER);
+                let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
+                let prg = createProgram(vs, fs);
+                if(prg == null){return;}
+                videoPrg = new ProgramParameter(prg);
+                loadCheck();
+            }
+        );
+        loadShaderSource(
+            './shader/picture.vert',
+            './shader/picture.frag',
+            (shader) => {
+                let vs = createShader(shader.vs, gl.VERTEX_SHADER);
+                let fs = createShader(shader.fs, gl.FRAGMENT_SHADER);
+                let prg = createProgram(vs, fs);
+                if(prg == null){return;}
+                picturePrg = new ProgramParameter(prg);
+                loadCheck();
+            }
+        );
         // シェーダのロードが完了したかチェックし init を呼び出す
         function loadCheck(){
             if(
                 scenePrg != null &&
-                resetPrg != null &&
                 videoPrg != null &&
                 picturePrg != null &&
                 true
@@ -162,13 +143,6 @@
         // scenePrg.uniType[0]     = 'uniformMatrix4fv';
         scenePrg.uniType[1]     = 'uniform2fv';
         scenePrg.uniType[2]     = 'uniform1i';
-
-        resetPrg.attLocation[0] = gl.getAttribLocation(resetPrg.program, 'position');
-        resetPrg.attStride[0]   = 3;
-        resetPrg.uniLocation[0] = gl.getUniformLocation(resetPrg.program, 'resolution');
-        resetPrg.uniLocation[1] = gl.getUniformLocation(resetPrg.program, 'videoTexture');
-        resetPrg.uniType[0]     = 'uniform2fv';
-        resetPrg.uniType[1]     = 'uniform1i';
 
         videoPrg.attLocation[0] = gl.getAttribLocation(videoPrg.program, 'position');
         videoPrg.attStride[0]   = 3;
@@ -252,10 +226,10 @@
         gl.bindTexture(gl.TEXTURE_2D, pictureFramebuffers[1].texture);
 
         // reset framebuffers
-        gl.useProgram(resetPrg.program);
-        gl[resetPrg.uniType[0]](resetPrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
-        gl[resetPrg.uniType[1]](resetPrg.uniLocation[1], 0);
-        setAttribute(planeVBO, resetPrg.attLocation, resetPrg.attStride, planeIBO);
+        gl.useProgram(videoPrg.program);
+        gl[videoPrg.uniType[0]](videoPrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
+        gl[videoPrg.uniType[1]](videoPrg.uniLocation[1], 0);
+        setAttribute(planeVBO, videoPrg.attLocation, videoPrg.attStride, planeIBO);
         gl.viewport(0, 0, POINT_RESOLUTION, POINT_RESOLUTION);
         for(let i = 0; i <= 1; ++i){
             // video buffer
