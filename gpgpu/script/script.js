@@ -18,7 +18,7 @@
     let positionPrg;
     let velocityPrg;
 
-    const POINT_RESOLUTION = 1024;
+    const POINT_RESOLUTION = 256;
     const VIDEO_BUFFER_INDEX = 1;
     const PICTURE_BUFFER_INDEX = 3;
     const POSITION_BUFFER_INDEX = 5;
@@ -184,7 +184,7 @@
         scenePrg.attStride[0]   = 2;
         scenePrg.uniLocation[0] = gl.getUniformLocation(scenePrg.program, 'mvpMatrix');
         scenePrg.uniLocation[1] = gl.getUniformLocation(scenePrg.program, 'resolution');
-        scenePrg.uniLocation[2] = gl.getUniformLocation(scenePrg.program, 'pictureTexture');
+        scenePrg.uniLocation[2] = gl.getUniformLocation(scenePrg.program, 'videoTexture');
         scenePrg.uniLocation[3] = gl.getUniformLocation(scenePrg.program, 'positionTexture');
         scenePrg.uniType[0]     = 'uniformMatrix4fv';
         scenePrg.uniType[1]     = 'uniform2fv';
@@ -216,17 +216,6 @@
         resetPrg.uniType[0]     = 'uniform2fv';
         resetPrg.uniType[1]     = 'uniform1i';
 
-        positionPrg.attLocation[0] = gl.getAttribLocation(positionPrg.program, 'position');
-        positionPrg.attStride[0]   = 3;
-        positionPrg.uniLocation[0] = gl.getUniformLocation(positionPrg.program, 'prevTexture');
-        positionPrg.uniLocation[1] = gl.getUniformLocation(positionPrg.program, 'velocityTexture');
-        positionPrg.uniLocation[2] = gl.getUniformLocation(positionPrg.program, 'resolution');
-        positionPrg.uniLocation[3] = gl.getUniformLocation(positionPrg.program, 'move');
-        positionPrg.uniType[0]     = 'uniform1i';
-        positionPrg.uniType[1]     = 'uniform1i';
-        positionPrg.uniType[2]     = 'uniform2fv';
-        positionPrg.uniType[3]     = 'uniform1i';
-
         velocityPrg.attLocation[0] = gl.getAttribLocation(velocityPrg.program, 'position');
         velocityPrg.attStride[0]   = 3;
         velocityPrg.uniLocation[0] = gl.getUniformLocation(velocityPrg.program, 'prevTexture');
@@ -242,11 +231,23 @@
         velocityPrg.uniType[4]     = 'uniform1i';
         velocityPrg.uniType[5]     = 'uniform2fv';
 
+        positionPrg.attLocation[0] = gl.getAttribLocation(positionPrg.program, 'position');
+        positionPrg.attStride[0]   = 3;
+        positionPrg.uniLocation[0] = gl.getUniformLocation(positionPrg.program, 'prevPositionTexture');
+        positionPrg.uniLocation[1] = gl.getUniformLocation(positionPrg.program, 'pictureTexture');
+        positionPrg.uniLocation[2] = gl.getUniformLocation(positionPrg.program, 'resolution');
+        positionPrg.uniLocation[3] = gl.getUniformLocation(positionPrg.program, 'move');
+        positionPrg.uniType[0]     = 'uniform1i';
+        positionPrg.uniType[1]     = 'uniform1i';
+        positionPrg.uniType[2]     = 'uniform2fv';
+        positionPrg.uniType[3]     = 'uniform1i';
+
         let pointTexCoord = [];
         for(let i = 0; i < POINT_RESOLUTION; ++i){
             let t = i / POINT_RESOLUTION;
             for(let j = 0; j < POINT_RESOLUTION; ++j){
-                let s = j / POINT_RESOLUTION;
+                let back = i % 2 === 1;
+                let s = 1 * back + j / POINT_RESOLUTION * (back ? -1 : 1);
                 pointTexCoord.push(s, t);
             }
         }
@@ -295,11 +296,11 @@
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION)
         ];
 
-        let positionFramebuffers = [
+        let velocityFramebuffers = [
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION),
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION)
         ];
-        let velocityFramebuffers = [
+        let positionFramebuffers = [
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION),
             createFramebufferFloat(ext, POINT_RESOLUTION, POINT_RESOLUTION)
         ];
@@ -346,19 +347,20 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
+        // reset particle position
         gl.useProgram(resetPrg.program);
         gl[resetPrg.uniType[0]](resetPrg.uniLocation[0], [POINT_RESOLUTION, POINT_RESOLUTION]);
         gl[resetPrg.uniType[1]](resetPrg.uniLocation[1], 0);
         setAttribute(planeVBO, resetPrg.attLocation, resetPrg.attStride, planeIBO);
         gl.viewport(0, 0, POINT_RESOLUTION, POINT_RESOLUTION);
         for(let i = 0; i <= 1; ++i){
-            // position buffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, positionFramebuffers[i].framebuffer);
+            // velocity buffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, velocityFramebuffers[i].framebuffer);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
-            // velocity buffer
-            gl.bindFramebuffer(gl.FRAMEBUFFER, velocityFramebuffers[i].framebuffer);
+            // position buffer
+            gl.bindFramebuffer(gl.FRAMEBUFFER, positionFramebuffers[i].framebuffer);
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
@@ -447,13 +449,14 @@
 
             // push and render
             mat.identity(mMatrix);
-            mat.rotate(mMatrix, nowTime * 0.05, [0.0, 1.0, 0.0], mMatrix);
+            // mat.rotate(mMatrix, nowTime * 0.05, [0.0, 1.0, 0.0], mMatrix);
             mat.multiply(vpMatrix, mMatrix, mvpMatrix);
             gl[scenePrg.uniType[0]](scenePrg.uniLocation[0], false, mvpMatrix);
             gl[scenePrg.uniType[1]](scenePrg.uniLocation[1], [POINT_RESOLUTION, POINT_RESOLUTION]);
-            gl[scenePrg.uniType[2]](scenePrg.uniLocation[2], PICTURE_BUFFER_INDEX + targetBufferIndex);
+            gl[scenePrg.uniType[2]](scenePrg.uniLocation[2], VIDEO_BUFFER_INDEX + targetBufferIndex);
             gl[scenePrg.uniType[3]](scenePrg.uniLocation[3], POSITION_BUFFER_INDEX + targetBufferIndex);
             // gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
+            // gl.drawArrays(gl.LINE_STRIP, 0, POINT_RESOLUTION * POINT_RESOLUTION);
             gl.drawArrays(gl.POINTS, 0, POINT_RESOLUTION * POINT_RESOLUTION);
 
             gl.flush();
