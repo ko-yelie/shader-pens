@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>GPGPU 疑似モーションキャプチャ</title>
-        <script src="./script/minMatrix.js"></script>
-        <script src="./script/script.js"></script>
-        <link rel="stylesheet" href="./css/style.css">
-    </head>
-    <body>
-        <canvas id="canvas"></canvas>
-    </body>
+  <head>
+    <title>GPGPU 疑似モーションキャプチャ</title>
+    <script src="./script/minMatrix.js"></script>
+    <script src="./script/script.js"></script>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+
+    <div id="mode">
+      <label><input type="radio" v-model="mode" value="points">POINTS</label>
+      <label><input type="radio" v-model="mode" value="line">LINE_STRIP</label>
+    </div>
+  </body>
 </html>

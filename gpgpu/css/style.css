@@ -15,3 +15,15 @@ html, body {
 canvas {
     margin: 0px auto;
 }
+
+#mode {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  color: #888;
+  text-align: left;
+}
+
+#mode label {
+  display: block;
+}

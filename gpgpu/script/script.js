@@ -375,8 +375,30 @@
         let startTime = Date.now();
         let nowTime = 0;
         let loopCount = 0;
+        let mode;
         run = true;
         render();
+
+        new Vue({
+          el: '#mode',
+          data: {
+            mode: 'points'
+          },
+          watch: {
+            mode: function (val) {
+              switch (val) {
+                case 'points':
+                  mode = gl.POINTS
+                  break;
+                case 'line':
+                  mode = gl.LINE_STRIP
+                  break;
+                default:
+                  mode = gl.POINTS
+              }
+            }
+          }
+        });
 
         function render(){
             nowTime = (Date.now() - startTime) / 1000;
@@ -456,8 +478,7 @@
             gl[scenePrg.uniType[2]](scenePrg.uniLocation[2], VIDEO_BUFFER_INDEX + targetBufferIndex);
             gl[scenePrg.uniType[3]](scenePrg.uniLocation[3], POSITION_BUFFER_INDEX + targetBufferIndex);
             // gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
-            // gl.drawArrays(gl.LINE_STRIP, 0, POINT_RESOLUTION * POINT_RESOLUTION);
-            gl.drawArrays(gl.POINTS, 0, POINT_RESOLUTION * POINT_RESOLUTION);
+            gl.drawArrays(mode, 0, POINT_RESOLUTION * POINT_RESOLUTION);
 
             gl.flush();
 
