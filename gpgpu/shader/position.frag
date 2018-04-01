@@ -18,6 +18,6 @@ void main(){
     }
     vec3 position = prevPosition.xyz + picture.xyz * power * SPEED;
     float color = picture.x + picture.y + picture.z;
-    float z = step(0.01, color) * minZ + color;
+    float z = step(0.01, color) * minZ + color * 0.3;
     gl_FragColor = vec4(prevPosition.xy, z, prevPosition.w);
 }

@@ -18,7 +18,7 @@
     let positionPrg;
     let velocityPrg;
 
-    const POINT_RESOLUTION = 256;
+    const POINT_RESOLUTION = 128;
     const VIDEO_BUFFER_INDEX = 1;
     const PICTURE_BUFFER_INDEX = 3;
     const POSITION_BUFFER_INDEX = 5;
@@ -243,12 +243,21 @@
         positionPrg.uniType[3]     = 'uniform1i';
 
         let pointTexCoord = [];
-        for(let i = 0; i < POINT_RESOLUTION; ++i){
-            let t = i / POINT_RESOLUTION;
-            for(let j = 0; j < POINT_RESOLUTION; ++j){
-                let back = i % 2 === 1;
-                let s = 1 * back + j / POINT_RESOLUTION * (back ? -1 : 1);
-                pointTexCoord.push(s, t);
+        const sWidth = 256;
+        const tHeight = 256;
+        const sInterval = (sWidth / POINT_RESOLUTION) / sWidth;
+        const tInterval = (tHeight / POINT_RESOLUTION) / tHeight;
+        for(let t = 0; t < 1 - tInterval; t += tInterval){
+            for(let s = 0; s < 1; s += sInterval){
+                if (s === sWidth - sInterval) {
+                  pointTexCoord.push(s, t);
+                  pointTexCoord.push(s, t + tInterval);
+                } else {
+                  pointTexCoord.push(s, t);
+                  pointTexCoord.push(s, t + tInterval);
+                  pointTexCoord.push(s + sInterval, t + tInterval);
+                  pointTexCoord.push(s, t);
+                }
             }
         }
         let pointVBO = [createVbo(pointTexCoord)];
@@ -282,7 +291,7 @@
         let pMatrix      = mat.identity(mat.create());
         let vpMatrix     = mat.identity(mat.create());
         let mvpMatrix    = mat.identity(mat.create());
-        mat.lookAt([0.0, 0.0, 5.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
+        mat.lookAt([0.0, 0.0, 5.0 / (sWidth / POINT_RESOLUTION)], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], vMatrix);
         mat.perspective(60, canvasWidth / canvasHeight, 0.1, 20.0, pMatrix);
         mat.multiply(pMatrix, vMatrix, vpMatrix);
 
@@ -375,14 +384,14 @@
         let startTime = Date.now();
         let nowTime = 0;
         let loopCount = 0;
-        let mode;
+        let mode = 'points';
         run = true;
         render();
 
         new Vue({
           el: '#mode',
           data: {
-            mode: 'points'
+            mode
           },
           watch: {
             mode: function (val) {
@@ -390,8 +399,11 @@
                 case 'points':
                   mode = gl.POINTS
                   break;
-                case 'line':
+                case 'line_strip':
                   mode = gl.LINE_STRIP
+                  break;
+                case 'triangles':
+                  mode = gl.TRIANGLES
                   break;
                 default:
                   mode = gl.POINTS
@@ -478,7 +490,7 @@
             gl[scenePrg.uniType[2]](scenePrg.uniLocation[2], VIDEO_BUFFER_INDEX + targetBufferIndex);
             gl[scenePrg.uniType[3]](scenePrg.uniLocation[3], POSITION_BUFFER_INDEX + targetBufferIndex);
             // gl.drawElements(gl.TRIANGLES, planeIndex.length, gl.UNSIGNED_SHORT, 0);
-            gl.drawArrays(mode, 0, POINT_RESOLUTION * POINT_RESOLUTION);
+            gl.drawArrays(mode, 0, (4 * (POINT_RESOLUTION - 1) + 2) * (POINT_RESOLUTION - 1));
 
             gl.flush();
 
