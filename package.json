@@ -1,0 +1,22 @@
+{
+  "name": "shader",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/ko-yelie/shader-pens.git",
+  "author": "ko-yelie <ko.yelie@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "sand-wind": "parcel ./sand-wind-2/index.pug --open"
+  },
+  "devDependencies": {
+    "glslify-bundle": "^5.0.0",
+    "glslify-deps": "^1.3.1",
+    "node-sass": "^4.9.3",
+    "parcel-bundler": "^1.9.7",
+    "pug": "^2.0.3"
+  },
+  "dependencies": {
+    "glsl-noise": "^0.0.0",
+    "glsl-random": "^0.0.5"
+  }
+}
