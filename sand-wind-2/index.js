@@ -32,11 +32,15 @@ function init (img) {
     },
     texture: {
       type: '1i'
+    },
+    imageResolution: {
+      type: '2fv'
     }
   }, program)
 
   createTexture(img)
   setUniform('texture', 0)
+  setUniform('imageResolution', [img.naturalWidth, img.naturalHeight])
 
   clearColor(0, 0, 0, 1)
 
