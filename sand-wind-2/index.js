@@ -1,4 +1,19 @@
+import * as dat from 'dat.gui'
+
 import TEXTURE_SRC from './tatsu.png'
+
+const data = {
+  timeK: 0.2,
+  noiseUvX: 0.5,
+  noiseUvY: 3,
+  noiseTimeY: 0.1,
+  smoothstepMin: 0.2,
+  snoiseValK: 3,
+  rndValK: 2,
+  uvXK: 1,
+  uvYK: 0.01
+}
+const dataKeys = Object.keys(data)
 
 function init (img) {
   initWebGL()
@@ -23,7 +38,7 @@ function init (img) {
 
   setAttribute('position')
 
-  createUniform({
+  const uniforms = {
     time: {
       type: '1f'
     },
@@ -36,7 +51,14 @@ function init (img) {
     imageResolution: {
       type: '2fv'
     }
-  }, program)
+  }
+  dataKeys.forEach(key => {
+    uniforms[key] = {
+      type: '1f',
+      value: data[key]
+    }
+  })
+  createUniform(uniforms, program)
 
   createTexture(img)
   setUniform('texture', 0)
@@ -46,8 +68,17 @@ function init (img) {
 
   initSize()
 
+  const gui = new dat.GUI()
+  dataKeys.forEach(key => {
+    gui.add(data, key, -5, 5)
+  })
+
   start((time) => {
     setUniform('time', time / 1000)
+
+    dataKeys.forEach(key => {
+      setUniform(key, data[key])
+    })
   }, 'TRIANGLE_STRIP', positionCount)
 }
 
