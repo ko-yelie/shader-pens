@@ -3,14 +3,12 @@ import * as dat from 'dat.gui'
 import TEXTURE_SRC from './tatsu.png'
 
 const data = {
-  timeK: 0.2,
-  noiseUvX: 0.5,
-  noiseUvY: 3,
-  noiseTimeY: 0.1,
-  smoothstepMin: 0.2,
-  snoiseValK: 3,
-  rndValK: 2,
-  uvXK: 1,
+  onlyColor: false,
+  timeK: 1.8,
+  radius: 0.8,
+  startX: 4,
+  smoothstepMin: 0.1,
+  uvXK: 1.5,
   uvYK: 0.01
 }
 const dataKeys = Object.keys(data)
@@ -53,9 +51,10 @@ function init (img) {
     }
   }
   dataKeys.forEach(key => {
+    const value = data[key]
     uniforms[key] = {
-      type: '1f',
-      value: data[key]
+      type: `1${typeof value === 'boolean' ? 'i' : 'f'}`,
+      value
     }
   })
   createUniform(uniforms, program)
@@ -68,9 +67,11 @@ function init (img) {
 
   initSize()
 
-  const gui = new dat.GUI()
+  const gui = dataKeys.length > 0 && new dat.GUI()
   dataKeys.forEach(key => {
-    gui.add(data, key, -5, 5)
+    const value = data[key]
+    const range = typeof value === 'boolean' ? [] : [value - 2, value + 2]
+    gui.add(data, key, ...range)
   })
 
   start((time) => {

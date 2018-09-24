@@ -6,7 +6,8 @@
   "author": "ko-yelie <ko.yelie@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "sand-wind": "parcel ./sand-wind-2/index.pug --open"
+    "sand-wind": "parcel ./sand-wind/index.pug --open",
+    "sand-wind-2": "parcel ./sand-wind-2/index.pug --open"
   },
   "devDependencies": {
     "glslify-bundle": "^5.0.0",

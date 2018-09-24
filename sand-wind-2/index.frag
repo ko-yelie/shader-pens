@@ -4,14 +4,13 @@ uniform float time;
 uniform vec2 resolution;
 uniform vec2 imageResolution;
 varying vec2 vUv;
+varying vec2 vPosition;
 
+uniform bool onlyColor;
 uniform float timeK;
-uniform float noiseUvX;
-uniform float noiseUvY;
-uniform float noiseTimeY;
+uniform float radius;
+uniform float startX;
 uniform float smoothstepMin;
-uniform float snoiseValK;
-uniform float rndValK;
 uniform float uvXK;
 uniform float uvYK;
 
@@ -20,26 +19,27 @@ uniform float uvYK;
 #pragma glslify: adjustRatio = require(../shaders/modules/ratio.glsl)
 
 void main(){
-  float cTime = time * timeK;
   vec2 uv = adjustRatio(vUv, imageResolution, resolution) * 2. - 0.5;
 
-  vec2 noiseUv = vec2(uv.x * noiseUvX + cTime, uv.y * noiseUvY + cTime * noiseTimeY);
-  float snoiseVal = smoothstep(smoothstepMin, 1., snoise2(noiseUv));
+  float cTime = sin(time * timeK);
   float rndVal = random(uv + cTime);
-  float dist = (snoiseVal * snoiseValK * rndVal * rndValK) / (snoiseValK * rndValK);
-  //float dist = snoiseVal;
+  // rndVal = snoise2(uv * 100000. + cTime);
+  // rndVal = snoise2(vec2(uv.x) * 100000.);
+  // rndVal = snoise2(vec2(uv.y) * 100000.);
+  vec2 position = vPosition;
+  position.x += mix(startX * radius, 0., cTime) + mix(0.5, 1., rndVal);
+  float dist = radius / length(position);
+  dist = smoothstep(smoothstepMin, 1., dist);
   uv.x += dist * uvXK;
-  uv.y += sin(snoise2(vec2(uv.x) * 0.1) * sin(time)) * uvYK;
+  // uv.y += sin(snoise2(vec2(uv.x) * 0.1) * sin(cTime)) * uvYK;
+
   vec4 color;
   if (uv.x < 0. || uv.x > 1. || uv.y < 0. || uv.y > 1.) {
     color = vec4(0.);
   } else {
     color = texture2D(texture, uv);
   }
-  color.a *= 1. - snoiseVal * 8.;
+  color.a *= 1. - dist;
 
-  gl_FragColor = color;
-  //gl_FragColor = color * vec4(vec3(1.), 1. - pow(snoiseVal, 0.5));
-  //gl_FragColor = vec4(vec3(dist), 1.);
-  //gl_FragColor = vec4(vec3(snoiseVal), 1.);
+  gl_FragColor = onlyColor ? vec4(dist) : color;
 }
