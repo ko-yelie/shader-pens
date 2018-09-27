@@ -1,4 +1,4 @@
-import TEXTURE_SRC from './tatsu.png'
+import TEXTURE_SRC from '../image/tatsu.png'
 
 function init (img) {
   initWebGL()

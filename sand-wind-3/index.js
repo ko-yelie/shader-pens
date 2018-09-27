@@ -1,19 +1,16 @@
 import * as dat from 'dat.gui'
 
-import TEXTURE_SRC from '../image/tatsu.png'
-// import TEXTURE_SRC from '../image/star.jpeg'
+import TEXTURE_SRC from './tatsu.png'
 
 const data = {
-  auto: true,
   onlyColor: false,
   frame: 0,
-  timeK: 0.6,
-  zoom: 0.5,
-  radius: 1.3,
-  startX: 4.8,
-  mixMin: 0.5,
-  smoothstepMin: 0.22,
-  uvXK: 2,
+  timeK: 1.8,
+  radius: 0.8,
+  startX: 0.5,
+  endX: 1,
+  smoothstepMin: 0.1,
+  uvXK: 1,
   uvYK: 0.01
 }
 const dataKeys = Object.keys(data)
@@ -84,7 +81,7 @@ function init (img) {
     gui.add(data, key, ...range)
   })
 
-  start(time => {
+  start((time) => {
     setUniform('time', time / 1000)
 
     dataKeys.forEach(key => {
@@ -233,18 +230,14 @@ function initSize () {
 }
 
 function start (draw, mode, count) {
-  let firstTime
-  const render = time => {
+  function render (time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-    draw(time - firstTime)
+    draw(time)
 
     gl.drawArrays(gl[mode], 0, count)
 
     requestAnimationFrame(render)
   }
-  requestAnimationFrame(time => {
-    firstTime = time
-    requestAnimationFrame(render)
-  })
+  requestAnimationFrame(render)
 }

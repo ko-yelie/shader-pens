@@ -6,14 +6,12 @@ uniform vec2 imageResolution;
 varying vec2 vUv;
 varying vec2 vPosition;
 
-uniform bool auto;
 uniform bool onlyColor;
-uniform float zoom;
 uniform float frame;
 uniform float timeK;
 uniform float radius;
 uniform float startX;
-uniform float mixMin;
+uniform float endX;
 uniform float smoothstepMin;
 uniform float uvXK;
 uniform float uvYK;
@@ -22,33 +20,26 @@ uniform float uvYK;
 #pragma glslify: random = require(glsl-random)
 #pragma glslify: adjustRatio = require(../shaders/modules/ratio.glsl)
 
-const float delay = 0.8;
-
 void main(){
-  vec2 uv = adjustRatio(vUv, imageResolution, resolution);
-  float zoomScale = 1. / zoom;
-  uv = uv * zoomScale + (1. - zoomScale) / 2.;
+  vec2 uv = adjustRatio(vUv, imageResolution, resolution) * 2. - 0.5;
   vec2 cUv = uv;
 
-  vec4 baseColor;
-  if (uv.x < 0. || uv.x > 1. || uv.y < 0. || uv.y > 1.) {
-    baseColor = vec4(0.);
-  } else {
-    baseColor = texture2D(texture, uv);
-  }
-
-  float cTime = max(time - delay, 0.);
-  cTime = -cos(cTime * timeK) * 0.5 + 0.5;
-  if (!auto) {
-    cTime = frame;
-  }
+  float cTime = sin(time * timeK) * 0.5 + 0.5;
+  cTime = frame;
   float rndVal = random(uv + cTime);
+  // rndVal = snoise2(uv * 100000. + cTime);
+  // rndVal = snoise2(vec2(uv.x) * 100000.);
+  // rndVal = snoise2(vec2(uv.y) * 100000.);
   vec2 position = vPosition;
-  position.x += mix(startX * radius, 0., cTime) + mix(mixMin, 1., rndVal);
-  float dist = radius / length(position);
+  position.x += mix(startX * radius, 0., cTime) + mix(0.5, 1., rndVal);
+  float dist = -position.x + cTime * endX;
   dist = smoothstep(smoothstepMin, 1., dist);
-  // dist = smoothstep(smoothstepMin, 1., dist) * baseColor.a;
-  cUv.x += dist * uvXK * zoomScale;
+
+  float whiteNoise = mix(0., 0.5, random(vec2(uv.x - cTime, uv.y)));
+  whiteNoise = 0.;
+  dist = pow(max(cTime - (uv.x + whiteNoise), 0.), 2.) * endX;
+
+  cUv.x += dist * uvXK;
   // cUv.y += sin(snoise2(vec2(cUv.x) * 0.1) * sin(cTime)) * uvYK;
 
   vec4 color;
@@ -57,7 +48,7 @@ void main(){
   } else {
     color = texture2D(texture, cUv);
   }
-  // color.a = 1. - dist;
+  color.a *= 1. - dist;
 
-  gl_FragColor = onlyColor ? vec4(dist) : color;
+  gl_FragColor = onlyColor ? vec4(vec3(dist), 1.) : color;
 }

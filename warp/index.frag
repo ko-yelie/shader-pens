@@ -43,6 +43,9 @@ void main(){
     cTime = frame;
   }
   float rndVal = random(uv + cTime);
+  // rndVal = snoise2(uv * 100000. + cTime);
+  // rndVal = snoise2(vec2(uv.x) * 100000.);
+  rndVal = snoise2(vec2(uv.y) * 100000.);
   vec2 position = vPosition;
   position.x += mix(startX * radius, 0., cTime) + mix(mixMin, 1., rndVal);
   float dist = radius / length(position);
