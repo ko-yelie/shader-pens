@@ -26,7 +26,7 @@ const data = {
   radius: 10,
   brightness: 0.75,
   angle: 0,
-  triangleBlur: 50
+  triangleBlur: 0
 };
 
 window.onload = function () {
@@ -43,20 +43,30 @@ window.onload = function () {
   var texture = canvas.texture(image);
 
   // apply the ink filter
-  update()
+  draw()
 
   // replace the image with the canvas
   image.parentNode.insertBefore(canvas, image);
   image.parentNode.removeChild(image);
 
   var gui = new dat.GUI();
-  gui.add(data, 'radius', 0, 100).onChange(update);
-  gui.add(data, 'brightness', -1, 1).onChange(update);
-  gui.add(data, 'angle', -Math.PI, Math.PI).onChange(update);
-  gui.add(data, 'triangleBlur', 0, 200).onChange(update);
+  gui.add(data, 'radius', 0, 200).onChange(draw).listen();
+  gui.add(data, 'brightness', -1, 1).onChange(draw);
+  gui.add(data, 'angle', -Math.PI, Math.PI).onChange(draw);
+  gui.add(data, 'triangleBlur', 0, 200).onChange(draw);
 
-  function update () {
+  requestAnimationFrame(update);
+
+  function draw () {
     canvas.draw(texture).lensBlur(data.radius, data.brightness, data.angle).triangleBlur(data.triangleBlur).update();
+  }
+
+  let time = 0;
+  function update () {
+    data.radius = (Math.sin(time * 0.1) + 1) * 100;
+    draw();
+    time++;
+    requestAnimationFrame(update);
   }
 };
 </script>
