@@ -9,7 +9,8 @@
     "sand-wind": "parcel ./sand-wind/index.pug --open",
     "sand-wind-2": "parcel ./sand-wind-2/index.pug --open",
     "warp": "parcel ./warp/index.pug --open",
-    "sand-wind-3": "parcel ./sand-wind-3/index.pug --open"
+    "sand-wind-3": "parcel ./sand-wind-3/index.pug --open",
+    "shooting-star": "parcel ./shooting-star/index.pug --open"
   },
   "devDependencies": {
     "glslify-bundle": "^5.0.0",
@@ -20,7 +21,11 @@
   },
   "dependencies": {
     "dat.gui": "^0.7.2",
-    "glsl-noise": "^0.0.0",
-    "glsl-random": "^0.0.5"
+    "glsl-easings": "^1.0.0",
+    "glsl-noise": "0.0.0",
+    "glsl-random": "0.0.5",
+    "three": "^0.98.0",
+    "three-bas": "^2.7.1",
+    "three-trackballcontrols": "^0.0.7"
   }
 }
