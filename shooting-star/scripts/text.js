@@ -1,17 +1,20 @@
 import * as THREE from 'three'
 import * as BAS from 'three-bas'
 
-import THREERoot from './THREERoot'
-import { getTextCoordinate } from './canvas'
-import { animate } from './modules/animation'
+import THREERoot from './modules/THREERoot'
+import { getTextCoordinate } from './modules/canvas'
+import {
+  animate,
+  easingList
+} from './modules/animation'
 import store from './store'
 import {
   CAMERA_Z,
   MAX_CAMERA_Z,
-  EASING_LIST,
+  EASE,
   TEXT_DELAY
 } from './constant'
-// import './three/ShaderChunk'
+// import './modules/three/ShaderChunk'
 import Particle from './particle'
 
 import vertexInit from '../shaders/top/text/vertexInit.vert'
@@ -35,8 +38,8 @@ const data = {
     range: [0, 5000]
   },
   easing: {
-    value: 'easeOutCubic',
-    range: [EASING_LIST]
+    value: EASE,
+    range: [easingList]
   }
 }
 
@@ -67,7 +70,7 @@ export default class Text {
       this.change(1, 0)
       this.change(0, 1)
     }
-    const folder = controller.addFolder('text')
+    const folder = controller.addFolder('Text')
     const datData = this.datData = controller.addData(data, { folder })
 
     const textWidth = FONT_SIZE * TEXT.length + FONT_SIZE * LETTER_SPACING * (TEXT.length - 1)

@@ -1,9 +1,12 @@
 import * as THREE from 'three'
 
-import { animate } from './modules/animation'
+import {
+  animate,
+  easingList
+} from './modules/animation'
 import store from './store'
 import {
-  EASING_LIST,
+  EASE,
   TEXT_DELAY
 } from './constant'
 
@@ -19,8 +22,8 @@ const data = {
     range: [0, 5000]
   },
   easing: {
-    value: 'easeOutCubic',
-    range: [EASING_LIST]
+    value: EASE,
+    range: [easingList]
   }
 }
 
@@ -56,7 +59,7 @@ export default class Particle {
     this.root = root
     const { clientWidth, clientHeight } = root.canvas
 
-    const folder = controller.addFolder('particle')
+    const folder = controller.addFolder('Text Particle')
     this.datData = controller.addData(data, { folder })
 
     const uniforms = {

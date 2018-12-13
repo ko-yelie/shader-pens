@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 
 import './original/postprocessing/core/ShaderPass'
-import vertexShader from '../../shaders/general/three-plain.vert'
-import triangleBlur from '../../shaders/modules/blur.glsl'
+import vertexShader from '../../../shaders/general/three-plain.vert'
+import triangleBlur from '../../../shaders/modules/blur.glsl'
 
 export class BlurPass extends THREE.ShaderPass {
   constructor (delta) {

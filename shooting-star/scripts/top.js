@@ -1,4 +1,4 @@
-import Controller from './datGUI-utils'
+import Controller from './modules/datGUI-utils'
 import ShootingStar from './shooting-star'
 import Text from './text'
 import store from './store'
@@ -13,7 +13,6 @@ export default class WebGL {
       closed: true
     })
     store.controller = controller
-    controller.gui.closed = true
 
     this.shootingStar = new ShootingStar(backgroundCanvas, container)
     this.text = new Text(textCanvas, container)

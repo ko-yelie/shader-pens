@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+
 import { noop } from './utils'
 
 const textureLoader = new THREE.TextureLoader()

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 
 import './original/postprocessing/core/ShaderPass'
-import vertexShader from '../../shaders/general/three-plain.vert'
+import vertexShader from '../../../shaders/general/three-plain.vert'
 
 export default class GlitterPass extends THREE.ShaderPass {
   constructor ({ startTime = 0, interval = 0 }) {

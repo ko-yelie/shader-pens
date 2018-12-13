@@ -297,3 +297,28 @@ export function easeInOutCirc (t, b, c, d) {
   if ((t /= d / 2) < 1) return (c / 2) * (1 - Math.sqrt(1 - t * t)) + b
   return (c / 2) * (Math.sqrt(1 - (t -= 2) * t) + 1) + b
 }
+
+export const easingList = [
+  'linear',
+  'easeInSine',
+  'easeOutSine',
+  'easeInOutSine',
+  'easeInQuad',
+  'easeOutQuad',
+  'easeInOutQuad',
+  'easeInCubic',
+  'easeOutCubic',
+  'easeInOutCubic',
+  'easeInQuart',
+  'easeOutQuart',
+  'easeInOutQuart',
+  'easeInQuint',
+  'easeOutQuint',
+  'easeInOutQuint',
+  'easeInExpo',
+  'easeOutExpo',
+  'easeInOutExpo',
+  'easeInCirc',
+  'easeOutCirc',
+  'easeInOutCirc'
+]

@@ -1,8 +1,8 @@
 import * as THREE from 'three'
 
-import THREERoot from './THREERoot'
+import THREERoot from './modules/THREERoot'
 import { downloadFile } from './modules/file'
-// import './three/original/postprocessing/BloomPass'
+// import './modules/three/original/postprocessing/BloomPass'
 import store from './store'
 import {
   CAMERA_Z,
@@ -95,7 +95,7 @@ export default class ShootingStar {
     const clientHalfWidth = clientWidth / 2
     const clientHalfHeight = clientHeight / 2
 
-    const folder = controller.addFolder('shooting star')
+    const folder = controller.addFolder('Shooting Star')
     this.datData = controller.addData(data, { folder })
 
     const resolution = new THREE.Vector2(clientWidth, clientHeight)

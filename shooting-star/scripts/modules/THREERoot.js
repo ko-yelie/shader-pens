@@ -25,7 +25,7 @@ export default class THREERoot {
       alpha = false,
       clearColor = 0x000000,
       aspect,
-      canvas,
+      canvas = document.createElement('canvas'),
       speed = 60 / 1000,
       interval,
       firstTime = 0,
@@ -54,9 +54,9 @@ export default class THREERoot {
 
     // container
     this.container = (typeof container === 'string') ? document.querySelector(container) : container
-    !canvas && this.container.appendChild(this.canvas)
+    !params.canvas && this.container.appendChild(this.canvas)
 
-    this.aspect = aspect
+    this.aspect = aspect || this.container.clientWidth / this.container.clientHeight
     this.setSize()
 
     // camera
@@ -213,6 +213,9 @@ export default class THREERoot {
   resize () {
     this.container.style.width = ''
     this.container.style.height = ''
+    if (this.aspect) {
+      this.aspect = this.container.clientWidth / this.container.clientHeight
+    }
     this.setSize()
 
     this.camera.aspect = this.width / this.height
@@ -251,7 +254,7 @@ export default class THREERoot {
     }
 
     this.addResizeCallback(() => {
-      composer.setSize(window.innerWidth * pixelRatio, window.innerHeight * pixelRatio)
+      composer.setSize(this.canvas.clientWidth * pixelRatio, this.canvas.clientHeight * pixelRatio)
     })
   }
 

@@ -4,7 +4,9 @@ import { noop } from './utils'
 
 export default class Controller {
   constructor (options) {
+    const { closed } = options
     this.gui = new dat.GUI(options)
+    this.gui.closed = closed
   }
 
   /**
