@@ -1,13 +1,8 @@
 import * as THREE from 'three'
 
-import THREERoot from './modules/THREERoot'
 import { downloadFile } from './modules/file'
 // import './modules/three/original/postprocessing/BloomPass'
 import store from './store'
-import {
-  CAMERA_Z,
-  MAX_CAMERA_Z
-} from './constant'
 import lineCoordinateCache from '../json/lineCoordinateCache.json'
 
 import vertexShader from '../shaders/top/milky-way/particle.vert'
@@ -79,31 +74,21 @@ const MOUSE_ATTRIBUTE_COUNT = 4
 const FRONT_ATTRIBUTE_COUNT = 2
 
 export default class ShootingStar {
-  constructor (canvas, container) {
-    const { controller } = store
+  constructor () {
+    const { root, controller } = store
+    this.root = root
 
-    const root = this.root = new THREERoot({
-      container,
-      fov: Math.atan(container.clientHeight / 2 / CAMERA_Z) * (180 / Math.PI) * 2,
-      zFar: MAX_CAMERA_Z,
-      cameraPosition: [0, 0, CAMERA_Z],
-      aspect: window.innerWidth / window.innerHeight,
-      canvas,
-      alpha: true
-    })
-    const { clientWidth, clientHeight } = root.canvas
-    const clientHalfWidth = clientWidth / 2
-    const clientHalfHeight = clientHeight / 2
+    let rate = 1
+    setSize()
 
     const folder = controller.addFolder('Shooting Star')
     this.datData = controller.addData(data, { folder })
 
-    const resolution = new THREE.Vector2(clientWidth, clientHeight)
     const front = new THREE.Vector2()
 
     const uniforms = {
       resolution: {
-        value: resolution
+        value: store.resolution
       },
       pixelRatio: {
         value: root.renderer.getPixelRatio()
@@ -156,13 +141,12 @@ export default class ShootingStar {
     let lineCoordinateList = []
     let enableSaveCoordinate = false
     const update = ({ clientX, clientY }) => {
-      enableSaveCoordinate && lineCoordinateList.push({
-        clientX: clientX - clientHalfWidth,
-        clientY: clientY - clientHalfHeight
-      })
+      enableSaveCoordinate && lineCoordinateList.push({ clientX, clientY })
 
-      const x = clientX
-      const y = clientHeight - clientY
+      // const x = clientX + store.clientHalfWidth
+      // const y = store.clientHeight - (clientY + store.clientHalfHeight)
+      const x = clientX * rate + store.clientHalfWidth
+      const y = store.clientHeight - (clientY * rate + store.clientHalfHeight)
       const newPosition = new THREE.Vector2(x, y)
       const diff = oldPosition ? newPosition.clone().sub(oldPosition) : new THREE.Vector2()
       const length = diff.length()
@@ -189,11 +173,8 @@ export default class ShootingStar {
     if (lineCoordinateCache) {
       let index = 0
       const drawLine = () => {
-        const coordinate = lineCoordinateCache[index]
-        update({
-          clientX: coordinate.clientX + clientHalfWidth,
-          clientY: coordinate.clientY + clientHalfHeight
-        })
+        const { clientX, clientY } = lineCoordinateCache[index]
+        update({ clientX, clientY })
         if (index < lineCoordinateCache.length - 1) {
           index++
           requestAnimationFrame(drawLine)
@@ -202,10 +183,18 @@ export default class ShootingStar {
       drawLine()
     }
     window.addEventListener('pointermove', e => {
-      update(e)
+      const { clientX, clientY } = e
+      update({
+        clientX: clientX - store.clientHalfWidth,
+        clientY: clientY - store.clientHalfHeight
+      })
     })
     window.addEventListener('touchmove', e => {
-      update(e.touches[0])
+      const { clientX, clientY } = e.touches[0]
+      update({
+        clientX: clientX - store.clientHalfWidth,
+        clientY: clientY - store.clientHalfHeight
+      })
     })
     window.addEventListener('keydown', ({ key }) => {
       switch (key) {
@@ -221,6 +210,30 @@ export default class ShootingStar {
 
     root.addUpdateCallback(timestamp => {
       this.update(timestamp)
+    })
+
+    function setSize () {
+      rate = Math.min(
+        store.ratio > store.initialRatio
+          ? store.clientHeight / store.initialClientHeight
+          : store.clientWidth / store.initialClientWidth
+        , 1)
+      rate *= 1 / (store.clientHeight / store.initialClientHeight)
+    }
+
+    root.addResizeCallback(() => {
+      setSize()
+
+      material.uniforms['resolution'].value = store.resolution
+
+      // let scale
+      // if (store.ratio > store.initialRatio) {
+      //   scale = store.clientHeight / store.initialClientHeight
+      // } else {
+      //   scale = store.clientWidth / store.initialClientWidth
+      // }
+      // console.log(scale)
+      // mesh.scale.set(scale, scale, 1)
     })
   }
 

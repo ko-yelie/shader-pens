@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import * as BAS from 'three-bas'
 
-import THREERoot from './modules/THREERoot'
 import { getTextCoordinate } from './modules/canvas'
 import {
   animate,
@@ -9,8 +8,6 @@ import {
 } from './modules/animation'
 import store from './store'
 import {
-  CAMERA_Z,
-  MAX_CAMERA_Z,
   EASE,
   TEXT_DELAY
 } from './constant'
@@ -46,29 +43,17 @@ const data = {
 const DELAY = TEXT_DELAY + 300
 
 export default class Text {
-  constructor (canvas, container) {
-    this.root = new THREERoot({
-      container,
-      fov: Math.atan(container.clientHeight / 2 / CAMERA_Z) * (180 / Math.PI) * 2,
-      zFar: MAX_CAMERA_Z,
-      cameraPosition: [0, 0, CAMERA_Z],
-      aspect: window.innerWidth / window.innerHeight,
-      autoStart: false,
-      canvas,
-      alpha: true
-    })
+  constructor () {
+    this.initText()
 
-    this.initText(canvas, container)
-
-    this.particle = new Particle(canvas, container, this.root)
+    this.particle = new Particle()
   }
 
-  initText (canvas, container) {
-    const { controller } = store
+  initText () {
+    const { root, controller } = store
 
     data['play'].value = () => {
-      this.change(1, 0)
-      this.change(0, 1)
+      this.change()
     }
     const folder = controller.addFolder('Text')
     const datData = this.datData = controller.addData(data, { folder })
@@ -169,10 +154,11 @@ export default class Text {
     mesh.visible = datData.visible
     mesh.position.setZ(0.1)
 
-    this.root.add(mesh)
+    root.add(mesh)
   }
 
   change () {
+    this.material.uniforms['uProgress'].value = 0
     setTimeout(() => {
       animate(progress => { this.update(progress) }, {
         duration: this.datData.duration,
@@ -188,7 +174,5 @@ export default class Text {
 
     this.mesh.visible = this.datData.visible
     this.material.uniforms['uDuration'].value = this.datData['duration']
-
-    this.root.render()
   }
 }

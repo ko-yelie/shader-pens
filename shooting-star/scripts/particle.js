@@ -53,11 +53,8 @@ const COUNT = 1000
 const DELAY = TEXT_DELAY
 
 export default class Particle {
-  constructor (canvas, container, root) {
-    const { controller } = store
-
-    this.root = root
-    const { clientWidth, clientHeight } = root.canvas
+  constructor () {
+    const { root, controller, clientWidth, clientHeight } = store
 
     const folder = controller.addFolder('Text Particle')
     this.datData = controller.addData(data, { folder })
@@ -104,6 +101,7 @@ export default class Particle {
   }
 
   change () {
+    this.material.uniforms['uProgress'].value = 0
     setTimeout(() => {
       animate(progress => { this.update(progress) }, {
         duration: this.datData.duration + this.datUniformData.delay,
@@ -119,7 +117,5 @@ export default class Particle {
     DATA_KEYS.forEach(key => {
       this.material.uniforms[key].value = this.datUniformData[key]
     })
-
-    this.root.render()
   }
 }
