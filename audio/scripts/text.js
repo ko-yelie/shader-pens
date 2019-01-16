@@ -83,7 +83,7 @@ export default class Text {
       localizeFaces: true,
       computeCentroids: true
     })
-    geometry.bufferUvs()
+    geometry.bufferUVs()
 
     geometry.createAttribute('aPosition', 4, (data, index) => {
       const centroid = geometry.centroids[index]

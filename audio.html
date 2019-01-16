@@ -1,0 +1,45 @@
+<title>Audio</title>
+
+<style>
+html,
+body {
+  height: 100%;
+}
+body {
+  overflow: hidden;
+  margin: 0;
+  background-color: #000;
+}
+canvas {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+</style>
+
+<script>
+const mediaDeviceInfos = await navigator.mediaDevices.enumerateDevices()
+
+let audioCount = 0
+const audioDevices = {}
+
+mediaDeviceInfos.forEach(mediaDeviceInfo => {
+  switch (mediaDeviceInfo.kind) {
+    case 'audioinput':
+      audioDevices[mediaDeviceInfo.label.replace(/ \(.+?\)/, '')] = mediaDeviceInfo.deviceId
+      audioCount++
+      break
+  }
+})
+
+if (audioCount === 0) {
+  this.noMedia = true
+} else {
+  this.audioSource = audioDevices['HD Pro Webcam C920'] || getFirstValue(audioDevices)
+  Object.assign(this.audioDevices, audioDevices)
+}
+</script>
+
+<body>
+</body>
