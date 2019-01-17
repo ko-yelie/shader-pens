@@ -4,4 +4,4 @@ export const EASE = 'easeOutCubic'
 export const TEXT_DELAY = 1000
 
 export const POINT_RESOLUTION = 128
-export const INTERVAL = 600
+export const INTERVAL = 520

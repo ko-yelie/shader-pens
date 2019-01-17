@@ -17,7 +17,7 @@ import Particle from './particle'
 import vertexInit from '../shaders/top/text/vertexInit.vert'
 import vertexPosition from '../shaders/top/text/vertexPosition.vert'
 
-const TEXT = 'Shooting Star'
+const TEXT = 'Audio Visualizer'
 const FONT_SIZE = 30
 const LETTER_SPACING = 0.2
 const FONT = 'Georgia, "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN W3", "游明朝", "Yu Mincho", YuMincho, serif'

@@ -277,6 +277,14 @@ export default class ShootingStar {
               })
             }, INTERVAL / fftSize)
           })
+          this.draw({
+            x: store.clientWidth,
+            y: store.clientHeight
+          })
+          this.draw({
+            x: -store.clientWidth,
+            y: store.clientHeight
+          })
 
           // const volume = media.getVolumeArray()[0] / 255
           // this.draw({
