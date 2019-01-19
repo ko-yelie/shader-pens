@@ -1,7 +1,10 @@
-import WebGL from './scripts/top'
+import init from './scripts/init'
+import Text from './scripts/text'
+import ShootingStar from './scripts/shooting-star'
 
-const webGL = new WebGL({
-  canvas: document.getElementById('canvas')
-})
+init()
 
-webGL.change()
+const text = new Text()
+const shootingStar = new ShootingStar()
+
+text.change()

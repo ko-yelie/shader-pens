@@ -263,39 +263,45 @@ export default class ShootingStar {
     const media = new Media({
       pointResolution: POINT_RESOLUTION
     })
-    media.enumerateDevices().then(() => {
-      media.getUserMedia().then(() => {
-        const { fftSize } = media.analyser
 
-        const render = () => {
-          media.getVolumeArray().forEach((volume, i) => {
-            volume /= 255
-            setTimeout(() => {
-              this.draw({
-                x: i / (fftSize - 1) * store.clientWidth - store.clientHalfWidth,
-                y: volume * store.clientHeight - store.clientHalfHeight
-              })
-            }, INTERVAL / fftSize)
-          })
-          this.draw({
-            x: store.clientWidth,
-            y: store.clientHeight
-          })
-          this.draw({
-            x: -store.clientWidth,
-            y: store.clientHeight
-          })
+    const initVisualizer = () => {
+      const { fftSize } = media.analyser
 
-          // const volume = media.getVolumeArray()[0] / 255
-          // this.draw({
-          //   x: 0,
-          //   y: volume * store.clientHeight - store.clientHalfHeight
-          // })
+      const render = () => {
+        media.getVolumeArray().forEach((volume, i) => {
+          volume /= 255
+          setTimeout(() => {
+            this.draw({
+              x: i / (fftSize - 1) * store.clientWidth - store.clientHalfWidth,
+              y: volume * store.clientHeight - store.clientHalfHeight
+            })
+          }, INTERVAL / fftSize)
+        })
+        this.draw({
+          x: store.clientWidth,
+          y: store.clientHeight
+        })
+        this.draw({
+          x: -store.clientWidth,
+          y: store.clientHeight
+        })
 
-          setTimeout(() => { render() }, INTERVAL)
-        }
-        render()
-      })
-    })
+        // const volume = media.getVolumeArray()[0] / 255
+        // this.draw({
+        //   x: 0,
+        //   y: volume * store.clientHeight - store.clientHalfHeight
+        // })
+
+        setTimeout(() => { render() }, INTERVAL)
+      }
+      render()
+    }
+
+    media.setAudio(require('../audio/Missions.mp3'))
+    initVisualizer()
+
+    // media.enumerateDevices().then(() => {
+    //   media.getUserMedia().then(() => { initVisualizer() })
+    // })
   }
 }

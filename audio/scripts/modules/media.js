@@ -101,6 +101,18 @@ export default class Media {
     })
   }
 
+  setAudio (audioSource) {
+    const audio = new Audio(audioSource)
+    audio.loop = true
+    this.source = this.audioCtx.createMediaElementSource(audio)
+    const gain = this.audioCtx.createGain()
+    gain.gain.value = 0.4
+    gain.connect(this.audioCtx.destination)
+    this.source.connect(gain)
+    this.setAnalyser()
+    audio.play()
+  }
+
   getUserMedia (sources = {}) {
     // let videoFile, smartphoneFile
     // if (/^file:/.test(sources.video)) {
@@ -134,12 +146,9 @@ export default class Media {
             //   this.currentVideo = this.video
             // }
 
-            const source = this.audioCtx.createMediaStreamSource(stream)
-            // const source = this.audioCtx.createMediaElementSource(this.currentVideo)
-            this.analyser = this.audioCtx.createAnalyser()
-            this.analyser.fftSize = this.pointResolution
-            source.connect(this.analyser)
-            this.array = new Uint8Array(this.analyser.fftSize)
+            this.source = this.audioCtx.createMediaStreamSource(stream)
+            // this.source = this.audioCtx.createMediaElementSource(this.currentVideo)
+            this.setAnalyser()
 
             resolve()
           })
@@ -167,6 +176,13 @@ export default class Media {
       //   this.currentVideo.addEventListener('canplay', playVideo)
       // }
     })
+  }
+
+  setAnalyser () {
+    this.analyser = this.audioCtx.createAnalyser()
+    this.analyser.fftSize = this.pointResolution
+    this.source.connect(this.analyser)
+    this.array = new Uint8Array(this.analyser.fftSize)
   }
 
   getVolumeArray (fn) {
