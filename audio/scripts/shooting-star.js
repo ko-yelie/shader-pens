@@ -207,6 +207,60 @@ export default class ShootingStar {
     window.addEventListener('click', this.startAudio)
   }
 
+  initMedia () {
+    window.removeEventListener('click', this.startAudio)
+
+    const media = new Media({
+      bufferLength: POINT_RESOLUTION
+    })
+
+    const initVisualizer = () => {
+      const render = () => {
+        media.getVolumeArray().forEach((volume, i) => {
+          volume /= 255
+          setTimeout(() => {
+            this.draw({
+              x: i / (POINT_RESOLUTION - 1) * store.clientWidth - store.clientHalfWidth,
+              y: volume * store.clientHeight - store.clientHalfHeight
+            })
+          }, INTERVAL / POINT_RESOLUTION)
+        })
+        this.draw({
+          x: store.clientWidth,
+          y: store.clientHeight
+        })
+        this.draw({
+          x: -store.clientWidth,
+          y: store.clientHeight
+        })
+
+        // const volume = media.getVolumeArray()[0] / 255
+        // this.draw({
+        //   x: 0,
+        //   y: volume * store.clientHeight - store.clientHalfHeight
+        // })
+
+        setTimeout(() => { render() }, INTERVAL)
+      }
+      render()
+    }
+
+    // media.setAudio(require('../audio/Funky_Magic.mp3'))
+    // media.setAudio(require('../audio/Feather_of_the_Angel.mp3'))
+    // media.setAudio(require('../audio/New_Departure.mp3'))
+    // media.setAudio(require('../audio/This_Way.mp3'))
+    // media.setAudio(require('../audio/Odd_Forest.mp3'))
+    media.setAudio(require('../audio/Missions.mp3'))
+    // media.setAudio(require('../audio/apple.mp3'))
+    // media.setAudio(require('../audio/グルーヴァー.mp3'))
+
+    initVisualizer()
+
+    // media.enumerateDevices().then(() => {
+    //   media.getUserMedia().then(() => { initVisualizer() })
+    // })
+  }
+
   draw ({ x, y }) {
     this.enableSaveCoordinate && this.lineCoordinateList.push({ x, y })
 
@@ -255,53 +309,5 @@ export default class ShootingStar {
         : store.clientWidth / store.initialClientWidth
       , 1)
     this.rate *= 1 / (store.clientHeight / store.initialClientHeight)
-  }
-
-  initMedia () {
-    window.removeEventListener('click', this.startAudio)
-
-    const media = new Media({
-      pointResolution: POINT_RESOLUTION
-    })
-
-    const initVisualizer = () => {
-      const { fftSize } = media.analyser
-
-      const render = () => {
-        media.getVolumeArray().forEach((volume, i) => {
-          volume /= 255
-          setTimeout(() => {
-            this.draw({
-              x: i / (fftSize - 1) * store.clientWidth - store.clientHalfWidth,
-              y: volume * store.clientHeight - store.clientHalfHeight
-            })
-          }, INTERVAL / fftSize)
-        })
-        this.draw({
-          x: store.clientWidth,
-          y: store.clientHeight
-        })
-        this.draw({
-          x: -store.clientWidth,
-          y: store.clientHeight
-        })
-
-        // const volume = media.getVolumeArray()[0] / 255
-        // this.draw({
-        //   x: 0,
-        //   y: volume * store.clientHeight - store.clientHalfHeight
-        // })
-
-        setTimeout(() => { render() }, INTERVAL)
-      }
-      render()
-    }
-
-    media.setAudio(require('../audio/Missions.mp3'))
-    initVisualizer()
-
-    // media.enumerateDevices().then(() => {
-    //   media.getUserMedia().then(() => { initVisualizer() })
-    // })
   }
 }

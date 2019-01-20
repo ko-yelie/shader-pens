@@ -4,9 +4,9 @@ import { getFirstValue } from './utils.js'
 
 export default class Media {
   constructor (option) {
-    const { size, pointResolution } = option
+    const { size, bufferLength } = option
     // this.size = size
-    this.pointResolution = pointResolution
+    this.bufferLength = bufferLength
 
     // this.video = document.createElement('video')
     // this.video.width = this.size
@@ -180,9 +180,9 @@ export default class Media {
 
   setAnalyser () {
     this.analyser = this.audioCtx.createAnalyser()
-    this.analyser.fftSize = this.pointResolution
+    this.analyser.fftSize = this.bufferLength
     this.source.connect(this.analyser)
-    this.array = new Uint8Array(this.analyser.fftSize)
+    this.array = new Uint8Array(this.bufferLength)
   }
 
   getVolumeArray (fn) {
@@ -197,7 +197,7 @@ export default class Media {
 
     let max = 0
     this.analyser.getByteTimeDomainData(this.array)
-    for (let i = 0; i < this.analyser.fftSize; ++i) {
+    for (let i = 0; i < this.bufferLength; ++i) {
       max = Math.max(this.array[i], max)
     }
     return max / 255

@@ -15,7 +15,7 @@ export default class THREERoot {
     const {
       container = document.body,
       fov = 45,
-      zNear,
+      zNear = 1,
       zFar,
       cameraPosition = [0, 0, 30],
       createCameraControls = false,
