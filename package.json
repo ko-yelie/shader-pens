@@ -12,7 +12,9 @@
     "sand-wind-3": "parcel ./sand-wind-3/index.pug --no-hmr --open",
     "shooting-star": "parcel ./shooting-star/index.pug --no-hmr --open",
     "audio:shooting-star": "parcel ./audio/index.pug --no-hmr --open",
-    "audio:geographical": "parcel ./audio/3d.pug --no-hmr --open"
+    "audio:geographical": "parcel ./audio/3d.pug --no-hmr --open",
+    "audio:size": "parcel ./audio/size.pug --no-hmr --open",
+    "audio:size2": "parcel ./audio/size2.pug --no-hmr --open"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

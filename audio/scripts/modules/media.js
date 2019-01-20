@@ -195,11 +195,11 @@ export default class Media {
   getVolume () {
     if (this.noMedia) return 1
 
-    let max = 0
+    let sum = 0
     this.analyser.getByteTimeDomainData(this.array)
     for (let i = 0; i < this.bufferLength; ++i) {
-      max = Math.max(this.array[i], max)
+      sum += this.array[i]
     }
-    return max / 255
+    return sum / this.bufferLength / 255
   }
 }
