@@ -248,7 +248,6 @@ export default class ShootingStar {
     // media.setAudio(require('../audio/Funky_Magic.mp3'))
     // media.setAudio(require('../audio/Feather_of_the_Angel.mp3'))
     // media.setAudio(require('../audio/New_Departure.mp3'))
-    // media.setAudio(require('../audio/This_Way.mp3'))
     // media.setAudio(require('../audio/Odd_Forest.mp3'))
     media.setAudio(require('../audio/Missions.mp3'))
     // media.setAudio(require('../audio/apple.mp3'))
