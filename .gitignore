@@ -77,5 +77,3 @@ typings/
 .serverless
 
 dist
-
-*.mp3

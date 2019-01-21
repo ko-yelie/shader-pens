@@ -38,8 +38,6 @@ const uniformData = {
 const DATA_KEYS = Object.keys(uniformData)
 
 const COUNT = 32
-const MOUSE_ATTRIBUTE_COUNT = 4
-const FRONT_ATTRIBUTE_COUNT = 2
 
 export default class Size {
   constructor () {
@@ -51,8 +49,6 @@ export default class Size {
 
     const folder = controller.addFolder('Size')
     this.datData = controller.addData(data, { folder })
-
-    const front = new THREE.Vector2()
 
     const uniforms = {
     }
@@ -117,7 +113,6 @@ export default class Size {
     // media.setAudio(require('../audio/Funky_Magic.mp3'))
     media.setAudio(require('../audio/Feather_of_the_Angel.mp3'))
     // media.setAudio(require('../audio/New_Departure.mp3'))
-    // media.setAudio(require('../audio/This_Way.mp3'))
     // media.setAudio(require('../audio/Odd_Forest.mp3'))
     // media.setAudio(require('../audio/Missions.mp3'))
     // media.setAudio(require('../audio/apple.mp3'))

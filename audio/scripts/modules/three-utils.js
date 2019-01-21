@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { noop } from './utils'
 
 const textureLoader = new THREE.TextureLoader()
-const jsonLoader = new THREE.JSONLoader()
+// const jsonLoader = new THREE.JSONLoader()
 const fontLoader = new THREE.FontLoader()
 
 export function loadTexture (url) {
@@ -12,11 +12,11 @@ export function loadTexture (url) {
   })
 }
 
-export function loadJSON (url) {
-  return new Promise(resolve => {
-    jsonLoader.load(url, resolve)
-  })
-}
+// export function loadJSON (url) {
+//   return new Promise(resolve => {
+//     jsonLoader.load(url, resolve)
+//   })
+// }
 
 export function loadFont (url, text) {
   return new Promise((resolve, reject) => {
