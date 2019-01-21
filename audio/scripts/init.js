@@ -2,8 +2,6 @@ import * as THREE from 'three'
 
 import THREERoot from './modules/THREERoot'
 import Controller from './modules/datGUI-utils'
-import ShootingStar from './shooting-star'
-import Text from './text'
 import store from './store'
 import {
   CAMERA_Z,

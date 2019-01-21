@@ -108,11 +108,12 @@ export default class Wave3d {
     })
 
     this.startAudio = () => {
-      this.initMedia()
-      this.initParticle()
+      this.initMedia().then(() => {
+        this.initParticle()
 
-      root.addUpdateCallback(timestamp => {
-        this.update(timestamp)
+        root.addUpdateCallback(timestamp => {
+          this.update(timestamp)
+        })
       })
     }
     window.addEventListener('click', this.startAudio)
@@ -133,6 +134,13 @@ export default class Wave3d {
     // media.setAudio(require('../audio/Missions.mp3'))
     // media.setAudio(require('../audio/apple.mp3'))
     // media.setAudio(require('../audio/グルーヴァー.mp3'))
+    return Promise.resolve()
+
+    // return new Promise(resolve => {
+    //   media.enumerateDevices().then(() => {
+    //     media.getUserMedia().then(() => { resolve() })
+    //   })
+    // })
   }
 
   initParticle () {

@@ -94,17 +94,15 @@ export default class Size {
 
     root.addResizeCallback(() => {
       this.setSize()
-
-      material.uniforms['resolution'].value = store.resolution
     })
 
     this.startAudio = () => {
       window.removeEventListener('click', this.startAudio)
 
-      this.initMedia()
-
-      root.addUpdateCallback(timestamp => {
-        this.update(timestamp)
+      this.initMedia().then(() => {
+        root.addUpdateCallback(timestamp => {
+          this.update(timestamp)
+        })
       })
     }
     window.addEventListener('click', this.startAudio)
@@ -123,6 +121,13 @@ export default class Size {
     // media.setAudio(require('../audio/Missions.mp3'))
     // media.setAudio(require('../audio/apple.mp3'))
     // media.setAudio(require('../audio/グルーヴァー.mp3'))
+    return Promise.resolve()
+
+    // return new Promise(resolve => {
+    //   media.enumerateDevices().then(() => {
+    //     media.getUserMedia().then(() => { resolve() })
+    //   })
+    // })
   }
 
   update (timestamp) {

@@ -253,7 +253,6 @@ export default class ShootingStar {
     media.setAudio(require('../audio/Missions.mp3'))
     // media.setAudio(require('../audio/apple.mp3'))
     // media.setAudio(require('../audio/グルーヴァー.mp3'))
-
     initVisualizer()
 
     // media.enumerateDevices().then(() => {
