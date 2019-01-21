@@ -16,7 +16,7 @@ import fragmentShader from '../shaders/size/particle.frag'
 const uniformData = {
   maxSize: {
     type: '1f',
-    value: 256,
+    value: 142,
     range: [0, 256]
   },
   sizePow: {
