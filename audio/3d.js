@@ -24,9 +24,10 @@ const root = store.root = new THREERoot({
   fov: 75,
   zFar: 10000,
   cameraPosition: [0, 25, 1000],
+  // clearColor: 0xffffff,
   aspect: window.innerWidth / window.innerHeight,
   canvas,
-  alpha: true
+  // alpha: true
 })
 
 function setSize () {

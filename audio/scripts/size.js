@@ -7,11 +7,12 @@ import Media from './modules/media'
 import vertexShader from '../shaders/size/particle.vert'
 import fragmentShader from '../shaders/size/particle.frag'
 
-// const data = {
-//   visible: {
-//     value: true
-//   }
-// }
+const data = {
+  volumePow: {
+    value: 3,
+    range: [0, 5]
+  }
+}
 
 const uniformData = {
   maxSize: {
@@ -26,7 +27,7 @@ const uniformData = {
   },
   blur: {
     type: '1f',
-    value: 0.3,
+    value: 0.2,
     range: [0, 0.99]
   },
   minAlpha: {
@@ -49,7 +50,7 @@ export default class Size {
     this.setSize()
 
     const folder = controller.addFolder('Size')
-    // this.datData = controller.addData(data, { folder })
+    this.datData = controller.addData(data, { folder })
 
     const front = new THREE.Vector2()
 
@@ -141,7 +142,7 @@ export default class Size {
     this.volume.needsUpdate = true
 
     const positions = this.position.array
-    const radius = (store.clientHalfHeight - 100) * (0.8 + this.media.getVolume() * (1 - 0.8))
+    const radius = (store.clientHalfHeight - 100) * Math.pow(this.media.getVolume() * 1.1, this.datData.volumePow)
     for (let i = 0; i < COUNT * 3; i += 3) {
       const radian = Math.PI * 2 * i / COUNT + Math.PI * 0.5
       positions[i] = Math.cos(radian) * radius
