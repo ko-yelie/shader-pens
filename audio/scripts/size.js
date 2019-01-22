@@ -22,7 +22,7 @@ const uniformData = {
   },
   sizePow: {
     type: '1f',
-    value: 2,
+    value: 2.3,
     range: [0, 5]
   },
   blur: {
@@ -137,7 +137,7 @@ export default class Size {
     this.volume.needsUpdate = true
 
     const positions = this.position.array
-    const radius = (store.clientHalfHeight - 100) * Math.pow(this.media.getVolume() * 1.1, this.datData.volumePow)
+    const radius = (store.clientHalfHeight - 100) * Math.pow(this.media.getWrongVolume() * 1.1, this.datData.volumePow)
     for (let i = 0; i < COUNT * 3; i += 3) {
       const radian = Math.PI * 2 * i / COUNT + Math.PI * 0.5
       positions[i] = Math.cos(radian) * radius

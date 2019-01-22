@@ -198,6 +198,17 @@ export default class Media {
     let sum = 0
     this.analyser.getByteTimeDomainData(this.array)
     for (let i = 0; i < this.bufferLength; ++i) {
+      sum += Math.abs(this.array[i] / 255 * 2 - 1)
+    }
+    return sum / this.bufferLength
+  }
+
+  getWrongVolume () {
+    if (this.noMedia) return 1
+
+    let sum = 0
+    this.analyser.getByteTimeDomainData(this.array)
+    for (let i = 0; i < this.bufferLength; ++i) {
       sum += this.array[i]
     }
     return sum / this.bufferLength / 255

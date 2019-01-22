@@ -12,7 +12,7 @@ import {
   TEXT_DELAY
 } from './constant'
 // import './modules/three/ShaderChunk'
-import Particle from './particle'
+import Particle from './text-particle'
 
 import vertexInit from '../shaders/top/text/vertexInit.vert'
 import vertexPosition from '../shaders/top/text/vertexPosition.vert'

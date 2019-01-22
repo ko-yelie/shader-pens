@@ -125,7 +125,7 @@ export default class Size {
 
   update (timestamp) {
     this.material.uniforms['time'].value = timestamp
-    this.material.uniforms['volume'].value = Math.pow(Math.abs(this.media.getVolume() * 2 - 1), 3)
+    this.material.uniforms['volume'].value = Math.pow(this.media.getVolume(), 3)
 
     // this.mesh.visible = this.datData.visible
     DATA_KEYS.forEach(key => {

@@ -5,7 +5,6 @@ import { downloadFile } from './modules/file'
 import store from './store'
 import lineCoordinateCache from '../json/lineCoordinateCache.json'
 import Media from './modules/media'
-import { POINT_RESOLUTION, INTERVAL } from './constant'
 
 import vertexShader from '../shaders/top/milky-way/particle.vert'
 import fragmentShader from '../shaders/top/milky-way/particle.frag'
@@ -19,17 +18,17 @@ const data = {
 const uniformData = {
   size: {
     type: '1f',
-    value: 0.05,
+    value: 0.09,
     range: [0, 1]
   },
   speed: {
     type: '1f',
-    value: 0.012,
+    value: 0.02,
     range: [0, 0.05]
   },
   alphaSpeed: {
     type: '1f',
-    value: 1.1,
+    value: 1,
     range: [1, 2]
   },
   maxAlpha: {
@@ -39,13 +38,13 @@ const uniformData = {
   },
   radius: {
     type: '1f',
-    value: 6,
+    value: 9,
     range: [0, 20]
   },
   maxRadius: {
     type: '1f',
-    value: 5,
-    range: [1, 10]
+    value: 8,
+    range: [1, 20]
   },
   spreadZ: {
     type: '1f',
@@ -55,7 +54,7 @@ const uniformData = {
   far: {
     type: '1f',
     value: 10,
-    range: [0, 100]
+    range: [0, 1000]
   },
   maxDiff: {
     type: '1f',
@@ -70,6 +69,8 @@ const uniformData = {
 }
 const DATA_KEYS = Object.keys(uniformData)
 
+const POINT_RESOLUTION = 128
+const INTERVAL = 430
 const PER_MOUSE = 800
 const COUNT = PER_MOUSE * 200
 const MOUSE_ATTRIBUTE_COUNT = 4
@@ -96,6 +97,9 @@ export default class ShootingStar {
         value: root.renderer.getPixelRatio()
       },
       timestamp: {
+        value: 0
+      },
+      volume: {
         value: 0
       }
     }
@@ -184,10 +188,6 @@ export default class ShootingStar {
     //   }
     // })
 
-    root.addUpdateCallback(timestamp => {
-      this.update(timestamp)
-    })
-
     root.addResizeCallback(() => {
       this.setSize()
 
@@ -203,14 +203,20 @@ export default class ShootingStar {
       // mesh.scale.set(scale, scale, 1)
     })
 
-    this.startAudio = this.initMedia.bind(this)
+    this.startAudio = () => {
+      this.initMedia()
+
+      root.addUpdateCallback(timestamp => {
+        this.update(timestamp)
+      })
+    }
     window.addEventListener('click', this.startAudio)
   }
 
   initMedia () {
     window.removeEventListener('click', this.startAudio)
 
-    const media = new Media({
+    const media = this.media = new Media({
       bufferLength: POINT_RESOLUTION
     })
 
@@ -293,6 +299,7 @@ export default class ShootingStar {
   update (timestamp) {
     this.timestamp = timestamp
     this.material.uniforms['timestamp'].value = timestamp
+    this.material.uniforms['volume'].value = this.media.getVolume()
 
     this.mesh.visible = this.datData.visible
     DATA_KEYS.forEach(key => {

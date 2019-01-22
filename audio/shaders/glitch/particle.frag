@@ -16,7 +16,7 @@ const float deflection = 0.01;
 const float rgbDiff = 0.5;
 
 void main(){
-  vec2 cUv = (vUv - 0.5) * mix(0.1, 1.1, 1. - pow(volume, 2.)) + 0.5;
+  vec2 cUv = (vUv - 0.5) * mix(0.01, 1.1, 1. - pow(volume, 1.2)) + 0.5;
 
   float rnd = random(vec2(time));
   float slowSn = step(0.74, snoise2(floor(vec2(0., cUv.y * 2.) * random(vec2(floor(time * 50.))) * 60.)));

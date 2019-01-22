@@ -12,6 +12,7 @@ attribute float random;
 uniform vec2 resolution;
 uniform float pixelRatio;
 uniform float timestamp;
+uniform float volume;
 
 uniform float size;
 // uniform float delay;
@@ -76,5 +77,5 @@ void main () {
   vSpreadLength = cPosition.y;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(currentPosition, 1.);
-  gl_PointSize = currentPosition.z * size * pixelRatio;
+  gl_PointSize = currentPosition.z * size * mix(0.1, 1., pow(volume, 0.3)) * pixelRatio;
 }
