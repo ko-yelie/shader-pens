@@ -5,7 +5,6 @@ import { downloadFile } from './modules/file'
 import store from './store'
 import lineCoordinateCache from '../json/lineCoordinateCache.json'
 import Media from './modules/media'
-import { POINT_RESOLUTION, INTERVAL } from './constant'
 
 import vertexShader from '../shaders/top/milky-way/particle.vert'
 import fragmentShader from '../shaders/top/milky-way/particle.frag'
@@ -24,7 +23,7 @@ const uniformData = {
   },
   speed: {
     type: '1f',
-    value: 0.012,
+    value: 0.02,
     range: [0, 0.05]
   },
   alphaSpeed: {
@@ -39,13 +38,13 @@ const uniformData = {
   },
   radius: {
     type: '1f',
-    value: 6,
+    value: 9,
     range: [0, 20]
   },
   maxRadius: {
     type: '1f',
-    value: 5,
-    range: [1, 10]
+    value: 8,
+    range: [1, 20]
   },
   spreadZ: {
     type: '1f',
@@ -70,6 +69,8 @@ const uniformData = {
 }
 const DATA_KEYS = Object.keys(uniformData)
 
+const POINT_RESOLUTION = 128
+const INTERVAL = 430
 const PER_MOUSE = 800
 const COUNT = PER_MOUSE * 200
 const MOUSE_ATTRIBUTE_COUNT = 4

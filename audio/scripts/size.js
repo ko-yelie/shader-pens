@@ -22,7 +22,7 @@ const uniformData = {
   },
   sizePow: {
     type: '1f',
-    value: 2,
+    value: 2.3,
     range: [0, 5]
   },
   blur: {
