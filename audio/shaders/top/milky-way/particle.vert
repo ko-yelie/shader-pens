@@ -47,7 +47,7 @@ vec2 polarToCartesian (vec2 p) {
 
 void main () {
   // float progress = max(uProgress - random * delay, 0.);
-  float progress = clamp((timestamp - mouse.z) * speed, 0., 1.);
+  float progress = clamp((timestamp - mouse.z) * speed * mix(1., 2., pow(volume, 0.5)), 0., 1.);
   progress *= step(0., mouse.x);
 
   float startX = mouse.x - resolution.x / 2.;
@@ -60,7 +60,7 @@ void main () {
   vec3 cPosition = position * 2. - 1.;
 
   float radian = cPosition.x * PI2 - PI;
-  vec2 xySpread = vec2(cos(radian), sin(radian)) * radius * mix(1., maxRadius, diff) * cPosition.y;
+  vec2 xySpread = vec2(cos(radian), sin(radian)) * radius * mix(0.5, 1.2, pow(volume, 0.7)) * mix(1., maxRadius, diff) * cPosition.y;
 
   vec3 endPosition = startPosition;
   endPosition.xy += xySpread;
@@ -77,5 +77,5 @@ void main () {
   vSpreadLength = cPosition.y;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(currentPosition, 1.);
-  gl_PointSize = currentPosition.z * size * mix(0.1, 1., pow(volume, 0.3)) * pixelRatio;
+  gl_PointSize = currentPosition.z * size * mix(0.1, 1., pow(volume, 0.25)) * pixelRatio;
 }

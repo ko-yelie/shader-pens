@@ -1624,7 +1624,7 @@ character-parser@^2.1.1:
   dependencies:
     is-regex "^1.0.3"
 
-chokidar@^2.0.3:
+chokidar@^2.0.0, chokidar@^2.0.3:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.0.4.tgz#356ff4e2b0e8e43e322d18a372460bbcf3accd26"
   dependencies:
@@ -5183,6 +5183,13 @@ sass-graph@^2.2.4:
     lodash "^4.0.0"
     scss-tokenizer "^0.2.3"
     yargs "^7.0.0"
+
+sass@^1.16.1:
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.16.1.tgz#3abbb04562c9e3a3ee11c3056956294ed333f6e6"
+  integrity sha512-lKoiOI/zsAHrdYAdcWBM0pynYCmK0t7N9OAVjxAoYvo0mDBQmlhM6w+zNuFQYeS6d3VF+7KVWwkX6oWNMJxVag==
+  dependencies:
+    chokidar "^2.0.0"
 
 sax@^1.2.4, sax@~1.2.1, sax@~1.2.4:
   version "1.2.4"

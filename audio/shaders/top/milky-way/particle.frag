@@ -4,6 +4,7 @@ precision highp int;
 // uniform float uProgress;
 uniform float alphaSpeed;
 uniform float maxAlpha;
+uniform float volume;
 
 varying float vProgress;
 varying float vRandom;
@@ -33,6 +34,6 @@ void main(){
   float alpha = 1. - min(alphaProgress, 1.);
   alpha *= cRandom * mix(0.5, 1., vDiff);
 
-	gl_FragColor = vec4(color * cRandom, light * alpha);
+	gl_FragColor = vec4(color * cRandom, light * alpha * mix(0.1, 1., pow(volume, 0.3) * 2.));
 	// gl_FragColor = vec4(1.);
 }

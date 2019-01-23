@@ -23,7 +23,7 @@ const uniformData = {
   },
   speed: {
     type: '1f',
-    value: 0.02,
+    value: 0.03,
     range: [0, 0.05]
   },
   alphaSpeed: {
@@ -75,6 +75,7 @@ const PER_MOUSE = 800
 const COUNT = PER_MOUSE * 200
 const MOUSE_ATTRIBUTE_COUNT = 4
 const FRONT_ATTRIBUTE_COUNT = 2
+const POINT_INTERVAL = (INTERVAL * 0.7) / (POINT_RESOLUTION + 2)
 
 export default class ShootingStar {
   constructor () {
@@ -229,16 +230,20 @@ export default class ShootingStar {
               x: i / (POINT_RESOLUTION - 1) * store.clientWidth - store.clientHalfWidth,
               y: volume * store.clientHeight - store.clientHalfHeight
             })
-          }, INTERVAL / POINT_RESOLUTION)
+          }, POINT_INTERVAL * i)
         })
-        this.draw({
-          x: store.clientWidth,
-          y: store.clientHeight
-        })
-        this.draw({
-          x: -store.clientWidth,
-          y: store.clientHeight
-        })
+        setTimeout(() => {
+          this.draw({
+            x: store.clientWidth,
+            y: store.clientHeight
+          })
+        }, POINT_INTERVAL * POINT_RESOLUTION)
+        setTimeout(() => {
+          this.draw({
+            x: -store.clientWidth,
+            y: store.clientHeight
+          })
+        }, POINT_INTERVAL * (POINT_RESOLUTION + 1))
 
         // const volume = media.getVolumeArray()[0] / 255
         // this.draw({
