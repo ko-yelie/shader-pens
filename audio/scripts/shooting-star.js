@@ -18,12 +18,12 @@ const data = {
 const uniformData = {
   size: {
     type: '1f',
-    value: 0.09,
+    value: 0.098,
     range: [0, 1]
   },
   speed: {
     type: '1f',
-    value: 0.03,
+    value: 0.026,
     range: [0, 0.05]
   },
   alphaSpeed: {
@@ -38,12 +38,12 @@ const uniformData = {
   },
   radius: {
     type: '1f',
-    value: 9,
+    value: 10,
     range: [0, 20]
   },
   maxRadius: {
     type: '1f',
-    value: 8,
+    value: 11,
     range: [1, 20]
   },
   spreadZ: {
@@ -63,7 +63,7 @@ const uniformData = {
   },
   diffPow: {
     type: '1f',
-    value: 0.24,
+    value: 0.5,
     range: [0, 10]
   }
 }
