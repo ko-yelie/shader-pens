@@ -2,6 +2,7 @@ uniform vec3 color;
 uniform vec3 colorUnder;
 
 varying float vColor;
+varying float vAlpha;
 varying vec3 vPosition;
 
 float fill(float l, float d) {
@@ -19,5 +20,5 @@ void main() {
   l += fill(length(p2), 1.) * (1.2 - length(p2 - vec2(0.2, 1.)) * .5);
   shadow = vec3(l);
 
-  gl_FragColor = vec4((vPosition.y >= 0. ? color : colorUnder) * vColor * shadow, 1.);
+  gl_FragColor = vec4((vPosition.y >= 0. ? color : colorUnder) * vColor * shadow, vAlpha);
 }

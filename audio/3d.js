@@ -27,7 +27,7 @@ const root = store.root = new THREERoot({
   // clearColor: 0xffffff,
   aspect: window.innerWidth / window.innerHeight,
   canvas,
-  // alpha: true
+  alpha: true
 })
 
 function setSize () {

@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { downloadFile } from './modules/file'
 // import './modules/three/original/postprocessing/BloomPass'
 import store from './store'
-import lineCoordinateCache from '../json/lineCoordinateCache.json'
+// import lineCoordinateCache from '../json/lineCoordinateCache.json'
 import Media from './modules/media'
 
 import vertexShader from '../shaders/top/milky-way/particle.vert'
@@ -23,7 +23,7 @@ const uniformData = {
   },
   speed: {
     type: '1f',
-    value: 0.026,
+    value: 0.025,
     range: [0, 0.05]
   },
   alphaSpeed: {
@@ -75,7 +75,7 @@ const PER_MOUSE = 800
 const COUNT = PER_MOUSE * 200
 const MOUSE_ATTRIBUTE_COUNT = 4
 const FRONT_ATTRIBUTE_COUNT = 2
-const POINT_INTERVAL = (INTERVAL * 0.7) / (POINT_RESOLUTION + 2)
+const POINT_INTERVAL = (INTERVAL * 0.45) / (POINT_RESOLUTION + 2)
 
 export default class ShootingStar {
   constructor () {
@@ -148,21 +148,21 @@ export default class ShootingStar {
     this.lineCoordinateList = []
     this.enableSaveCoordinate = false
 
-    if (lineCoordinateCache) {
-      let index = 0
-      const drawLine = () => {
-        const { clientX, clientY } = lineCoordinateCache[index]
-        this.draw({
-          x: clientX,
-          y: clientY
-        })
-        if (index < lineCoordinateCache.length - 1) {
-          index++
-          requestAnimationFrame(drawLine)
-        }
-      }
-      drawLine()
-    }
+    // if (lineCoordinateCache) {
+    //   let index = 0
+    //   const drawLine = () => {
+    //     const { clientX, clientY } = lineCoordinateCache[index]
+    //     this.draw({
+    //       x: clientX,
+    //       y: clientY
+    //     })
+    //     if (index < lineCoordinateCache.length - 1) {
+    //       index++
+    //       requestAnimationFrame(drawLine)
+    //     }
+    //   }
+    //   drawLine()
+    // }
     // window.addEventListener('pointermove', e => {
     //   const { clientX, clientY } = e
     //   this.draw({

@@ -124,8 +124,8 @@ export default class Wave3d {
       bufferLength: POINT_RESOLUTION
     })
 
-    media.setAudio(require('../audio/Odd_Forest.mp3'))
-    // media.setAudio(require('../audio/South_Wind.mp3'))
+    // media.setAudio(require('../audio/Odd_Forest.mp3'))
+    media.setAudio(require('../audio/South_Wind.mp3'))
 
     // media.setAudio(require('../audio/Funky_Magic.mp3'))
     // media.setAudio(require('../audio/Feather_of_the_Angel.mp3'))
@@ -218,7 +218,7 @@ export default class Wave3d {
     let j = startIndex
     for (let ix = 0; ix < this.amountX; ix++) {
       const volume = volumeArray[ix] / 255 * 2 - 1
-      positions[i + 1] = volume * 40 // y
+      positions[i + 1] = volume * 42 // y
       positions[i + 2] = this.z // z
       scales[j] = Math.abs(volume)
       // colors[i] = colors[i + 1] = colors[i + 2] = volume
