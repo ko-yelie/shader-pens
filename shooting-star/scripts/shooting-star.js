@@ -1,9 +1,14 @@
 import * as THREE from 'three'
 
+import {
+  animate,
+  easingList
+} from './modules/animation'
 import { downloadFile } from './modules/file'
 // import './modules/three/original/postprocessing/BloomPass'
 import store from './store'
-import lineCoordinateCache from '../json/lineCoordinateCache.json'
+// import lineCoordinateCache from '../json/lineCoordinateCache.json'
+import { EASE } from './constant'
 
 import vertexShader from '../shaders/top/milky-way/particle.vert'
 import fragmentShader from '../shaders/top/milky-way/particle.frag'
@@ -35,15 +40,15 @@ const uniformData = {
     value: 1.5,
     range: [1, 5]
   },
-  radius: {
+  spread: {
     type: '1f',
     value: 6,
     range: [0, 20]
   },
-  maxRadius: {
+  maxSpread: {
     type: '1f',
     value: 5,
-    range: [1, 10]
+    range: [1, 20]
   },
   spreadZ: {
     type: '1f',
@@ -78,8 +83,8 @@ export default class ShootingStar {
     const { root, controller } = store
     this.root = root
 
-    let rate = 1
-    setSize()
+    this.rate = 1
+    this.setSize()
 
     const folder = controller.addFolder('Shooting Star')
     this.datData = controller.addData(data, { folder })
@@ -100,7 +105,7 @@ export default class ShootingStar {
 
     this.datUniformData = controller.addUniformData(uniformData, uniforms, { folder })
 
-    const geometry = new THREE.BufferGeometry()
+    const geometry = this.geometry = new THREE.BufferGeometry()
     const positions = []
     const mouse = []
     const aFront = []
@@ -136,93 +141,16 @@ export default class ShootingStar {
     //   new THREE.ShaderPass(THREE.CopyShader)
     // ])
 
-    let mouseI = 0
-    let oldPosition
-    let lineCoordinateList = []
-    let enableSaveCoordinate = false
-    const update = ({ clientX, clientY }) => {
-      enableSaveCoordinate && lineCoordinateList.push({ clientX, clientY })
-
-      // const x = clientX + store.clientHalfWidth
-      // const y = store.clientHeight - (clientY + store.clientHalfHeight)
-      const x = clientX * rate + store.clientHalfWidth
-      const y = store.clientHeight - (clientY * rate + store.clientHalfHeight)
-      const newPosition = new THREE.Vector2(x, y)
-      const diff = oldPosition ? newPosition.clone().sub(oldPosition) : new THREE.Vector2()
-      const length = diff.length()
-      const front = diff.clone().normalize()
-
-      for (let i = 0; i < PER_MOUSE; i++) {
-        const ci = mouseI % (COUNT * MOUSE_ATTRIBUTE_COUNT) + i * MOUSE_ATTRIBUTE_COUNT
-        const position = oldPosition ? oldPosition.clone().add(diff.clone().multiplyScalar(i / PER_MOUSE)) : newPosition
-
-        geometry.attributes['mouse'].array[ci] = position.x
-        geometry.attributes['mouse'].array[ci + 1] = position.y
-        geometry.attributes['mouse'].array[ci + 2] = this.timestamp
-        geometry.attributes['mouse'].array[ci + 3] = length
-
-        geometry.attributes['aFront'].array[ci] = front.x
-        geometry.attributes['aFront'].array[ci + 1] = front.y
-      }
-
-      oldPosition = newPosition
-      geometry.attributes['mouse'].needsUpdate = true
-      geometry.attributes['aFront'].needsUpdate = true
-      mouseI += MOUSE_ATTRIBUTE_COUNT * PER_MOUSE
-    }
-    if (lineCoordinateCache) {
-      let index = 0
-      const drawLine = () => {
-        const { clientX, clientY } = lineCoordinateCache[index]
-        update({ clientX, clientY })
-        if (index < lineCoordinateCache.length - 1) {
-          index++
-          requestAnimationFrame(drawLine)
-        }
-      }
-      drawLine()
-    }
-    window.addEventListener('pointermove', e => {
-      const { clientX, clientY } = e
-      update({
-        clientX: clientX - store.clientHalfWidth,
-        clientY: clientY - store.clientHalfHeight
-      })
-    })
-    window.addEventListener('touchmove', e => {
-      const { clientX, clientY } = e.touches[0]
-      update({
-        clientX: clientX - store.clientHalfWidth,
-        clientY: clientY - store.clientHalfHeight
-      })
-    })
-    window.addEventListener('keydown', ({ key }) => {
-      switch (key) {
-        case 'r':
-          !enableSaveCoordinate && (lineCoordinateList = [])
-          enableSaveCoordinate = !enableSaveCoordinate
-          break
-        case 's':
-          lineCoordinateList.length > 0 && downloadFile(JSON.stringify(lineCoordinateList), 'lineCoordinateCache.json')
-          break
-      }
-    })
+    this.mouseI = 0
+    this.lineCoordinateList = []
+    this.enableSaveCoordinate = false
 
     root.addUpdateCallback(timestamp => {
       this.update(timestamp)
     })
 
-    function setSize () {
-      rate = Math.min(
-        store.ratio > store.initialRatio
-          ? store.clientHeight / store.initialClientHeight
-          : store.clientWidth / store.initialClientWidth
-        , 1)
-      rate *= 1 / (store.clientHeight / store.initialClientHeight)
-    }
-
     root.addResizeCallback(() => {
-      setSize()
+      this.setSize()
 
       material.uniforms['resolution'].value = store.resolution
 
@@ -237,6 +165,43 @@ export default class ShootingStar {
     })
   }
 
+  setEvent () {
+    window.addEventListener('pointermove', e => {
+      const { clientX, clientY } = e
+      this.draw({
+        clientX: clientX - store.clientHalfWidth,
+        clientY: clientY - store.clientHalfHeight
+      })
+    })
+    window.addEventListener('touchmove', e => {
+      const { clientX, clientY } = e.touches[0]
+      this.draw({
+        clientX: clientX - store.clientHalfWidth,
+        clientY: clientY - store.clientHalfHeight
+      })
+    })
+    window.addEventListener('keydown', ({ key }) => {
+      switch (key) {
+        case 'r':
+          !this.enableSaveCoordinate && (this.lineCoordinateList = [])
+          this.enableSaveCoordinate = !this.enableSaveCoordinate
+          break
+        case 's':
+          this.lineCoordinateList.length > 0 && downloadFile(JSON.stringify(this.lineCoordinateList), 'lineCoordinateCache.json')
+          break
+      }
+    })
+  }
+
+  setSize () {
+    this.rate = Math.min(
+      store.ratio > store.initialRatio
+        ? store.clientHeight / store.initialClientHeight
+        : store.clientWidth / store.initialClientWidth
+      , 1)
+    this.rate *= 1 / (store.clientHeight / store.initialClientHeight)
+  }
+
   update (timestamp) {
     this.timestamp = timestamp
     this.material.uniforms['timestamp'].value = timestamp
@@ -244,6 +209,85 @@ export default class ShootingStar {
     this.mesh.visible = this.datData.visible
     DATA_KEYS.forEach(key => {
       this.material.uniforms[key].value = this.datUniformData[key]
+    })
+  }
+
+  draw ({ clientX, clientY }) {
+    this.enableSaveCoordinate && this.lineCoordinateList.push({ clientX, clientY })
+
+    // const x = clientX + store.clientHalfWidth
+    // const y = store.clientHeight - (clientY + store.clientHalfHeight)
+    const x = clientX * this.rate + store.clientHalfWidth
+    const y = store.clientHeight - (clientY * this.rate + store.clientHalfHeight)
+    const newPosition = new THREE.Vector2(x, y)
+    const diff = this.oldPosition ? newPosition.clone().sub(this.oldPosition) : new THREE.Vector2()
+    const length = diff.length()
+    const front = diff.clone().normalize()
+
+    for (let i = 0; i < PER_MOUSE; i++) {
+      const ci = this.mouseI % (COUNT * MOUSE_ATTRIBUTE_COUNT) + i * MOUSE_ATTRIBUTE_COUNT
+      const position = this.oldPosition ? this.oldPosition.clone().add(diff.clone().multiplyScalar(i / PER_MOUSE)) : newPosition
+
+      this.geometry.attributes['mouse'].array[ci] = position.x
+      this.geometry.attributes['mouse'].array[ci + 1] = position.y
+      this.geometry.attributes['mouse'].array[ci + 2] = this.timestamp
+      this.geometry.attributes['mouse'].array[ci + 3] = length
+
+      this.geometry.attributes['aFront'].array[ci] = front.x
+      this.geometry.attributes['aFront'].array[ci + 1] = front.y
+    }
+
+    this.oldPosition = newPosition
+    this.geometry.attributes['mouse'].needsUpdate = true
+    this.geometry.attributes['aFront'].needsUpdate = true
+    this.mouseI += MOUSE_ATTRIBUTE_COUNT * PER_MOUSE
+  }
+
+  start () {
+    const period = Math.PI * 3
+
+    return new Promise(resolve => {
+      animate(progress => {
+        this.draw({
+          clientX: Math.cos(progress * period) * 150,
+          clientY: (progress * store.clientHeight - store.clientHalfHeight) * 1.2
+        })
+      }, {
+        duration: 1300,
+        easing: EASE,
+        onAfter: () => {
+          this.draw({
+            clientX: -store.clientHalfWidth,
+            clientY: (store.clientHeight - store.clientHalfHeight) * 1.2
+          })
+          this.draw({
+            clientX: -store.clientHalfWidth * 1.1,
+            clientY: 0
+          })
+
+          this.startText()
+
+          resolve()
+        }
+      })
+    })
+  }
+
+  startText () {
+    animate(progress => {
+      this.draw({
+        clientX: progress,
+        clientY: 0
+      })
+    }, {
+      begin: -store.clientHalfWidth,
+      finish: store.clientHalfWidth,
+      duration: 600,
+      easing: EASE,
+      onAfter: () => {
+        this.oldPosition = null
+        this.setEvent()
+      }
     })
   }
 }

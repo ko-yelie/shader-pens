@@ -17,8 +17,8 @@ uniform float size;
 // uniform float delay;
 uniform float speed;
 uniform float far;
-uniform float radius;
-uniform float maxRadius;
+uniform float spread;
+uniform float maxSpread;
 uniform float spreadZ;
 uniform float maxDiff;
 uniform float diffPow;
@@ -59,7 +59,7 @@ void main () {
   vec3 cPosition = position * 2. - 1.;
 
   float radian = cPosition.x * PI2 - PI;
-  vec2 xySpread = vec2(cos(radian), sin(radian)) * radius * mix(1., maxRadius, diff) * cPosition.y;
+  vec2 xySpread = vec2(cos(radian), sin(radian)) * spread * mix(1., maxSpread, diff) * cPosition.y;
 
   vec3 endPosition = startPosition;
   endPosition.xy += xySpread;
@@ -76,5 +76,5 @@ void main () {
   vSpreadLength = cPosition.y;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(currentPosition, 1.);
-  gl_PointSize = currentPosition.z * size * pixelRatio;
+  gl_PointSize = currentPosition.z * size * diff * pixelRatio;
 }

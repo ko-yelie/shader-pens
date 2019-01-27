@@ -4,4 +4,4 @@ const webGL = new WebGL({
   canvas: document.getElementById('canvas')
 })
 
-webGL.change()
+webGL.start()

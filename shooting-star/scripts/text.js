@@ -7,12 +7,8 @@ import {
   easingList
 } from './modules/animation'
 import store from './store'
-import {
-  EASE,
-  TEXT_DELAY
-} from './constant'
+import { EASE } from './constant'
 // import './modules/three/ShaderChunk'
-import Particle from './particle'
 
 import vertexInit from '../shaders/top/text/vertexInit.vert'
 import vertexPosition from '../shaders/top/text/vertexPosition.vert'
@@ -40,20 +36,16 @@ const data = {
   }
 }
 
-const DELAY = TEXT_DELAY + 300
-
 export default class Text {
   constructor () {
     this.initText()
-
-    this.particle = new Particle()
   }
 
   initText () {
     const { root, controller } = store
 
     data['play'].value = () => {
-      this.change()
+      this.start()
     }
     const folder = controller.addFolder('Text')
     const datData = this.datData = controller.addData(data, { folder })
@@ -83,7 +75,7 @@ export default class Text {
       localizeFaces: true,
       computeCentroids: true
     })
-    geometry.bufferUvs()
+    geometry.bufferUVs()
 
     geometry.createAttribute('aPosition', 4, (data, index) => {
       const centroid = geometry.centroids[index]
@@ -155,18 +147,19 @@ export default class Text {
     mesh.position.setZ(0.1)
 
     root.add(mesh)
+
+    root.addUpdateCallback(timestamp => {
+      this.mesh.visible = this.datData.visible
+    })
   }
 
-  change () {
+  start () {
     this.material.uniforms['uProgress'].value = 0
-    setTimeout(() => {
-      animate(progress => { this.update(progress) }, {
-        duration: this.datData.duration,
-        easing: this.datData.easing
-      })
-    }, DELAY)
 
-    this.particle.change()
+    animate(progress => { this.update(progress) }, {
+      duration: this.datData.duration,
+      easing: this.datData.easing
+    })
   }
 
   update (progress) {

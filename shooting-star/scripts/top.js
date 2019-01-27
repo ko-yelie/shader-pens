@@ -33,7 +33,8 @@ export default class WebGL {
       cameraPosition: [0, 0, CAMERA_Z],
       aspect: window.innerWidth / window.innerHeight,
       canvas,
-      alpha: true
+      alpha: true,
+      isAutoStart: false
     })
 
     this.setSize()
@@ -54,7 +55,14 @@ export default class WebGL {
     store.ratio = clientWidth / clientHeight
   }
 
-  change () {
-    this.text.change()
+  start () {
+    setTimeout(() => {
+      this.root.start()
+      this.shootingStar.start().then(() => {
+        setTimeout(() => {
+          this.text.start()
+        }, 20)
+      })
+    }, 600)
   }
 }

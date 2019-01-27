@@ -31,7 +31,7 @@ void main(){
   float alphaProgress = vProgress * alphaSpeed;
   alphaProgress *= mix(maxAlpha, 1., spreadEase(vSpreadLength) * diffEase(vDiff));
   float alpha = 1. - min(alphaProgress, 1.);
-  alpha *= cRandom * mix(0.5, 1., vDiff);
+  alpha *= cRandom * vDiff;
 
 	gl_FragColor = vec4(color * cRandom, light * alpha);
 }
