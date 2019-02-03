@@ -4,6 +4,7 @@ import THREERoot from './scripts/modules/THREERoot'
 import Controller from './scripts/modules/datGUI-utils'
 import { animate } from './scripts/modules/animation'
 import { easingList } from './scripts/modules/easing'
+// import './scripts/modules/three/original/postprocessing/BloomPass'
 import ShootingStar from './scripts/shooting-star'
 import Text from './scripts/text'
 import store from './scripts/store'
@@ -61,8 +62,7 @@ class WebGL {
       cameraPosition: [0, 0, CAMERA_Z],
       aspect: window.innerWidth / window.innerHeight,
       canvas,
-      alpha: true,
-      isAutoStart: false
+      alpha: true
     })
 
     this.setSize()
@@ -72,6 +72,11 @@ class WebGL {
 
     this.text = new Text()
     this.shootingStar = new ShootingStar()
+
+    // root.initPostProcessing([
+    //   new THREE.BloomPass(),
+    //   new THREE.ShaderPass(THREE.CopyShader)
+    // ])
   }
 
   setSize () {
@@ -84,8 +89,6 @@ class WebGL {
   }
 
   start () {
-    this.root.start()
-
     const period = Math.PI * 3
 
     animate(progress => {
@@ -118,7 +121,7 @@ class WebGL {
         clientY: 0
       })
 
-      this.text.update(progress)
+      this.text.update(progress - store.clientWidth * 0.1)
     }, {
       begin: -store.clientHalfWidth,
       finish: store.clientHalfWidth,

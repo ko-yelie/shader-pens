@@ -38,7 +38,7 @@ const uniformData = {
   },
   spread: {
     type: '1f',
-    value: 6,
+    value: 7,
     range: [0, 20]
   },
   maxSpread: {

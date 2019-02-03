@@ -15,7 +15,7 @@ varying float vSpreadLength;
 #pragma glslify: spreadEase = require(glsl-easings/sine-out)
 
 const float w = 0.5;
-const vec3 color = vec3(170., 133., 88.) / 255.;
+const vec3 baseColor = vec3(170., 133., 88.) / 255.;
 
 void main(){
 	vec2 p = gl_PointCoord.st * 2. - 1.;
@@ -33,5 +33,5 @@ void main(){
   float alpha = 1. - min(alphaProgress, 1.);
   alpha *= cRandom * vDiff;
 
-	gl_FragColor = vec4(color * cRandom, light * alpha);
+	gl_FragColor = vec4(baseColor * cRandom, light * alpha);
 }
