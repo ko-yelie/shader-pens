@@ -1,17 +1,13 @@
 import * as THREE from 'three'
 
-import {
-  animate,
-  easingList
-} from './modules/animation'
+import { animate } from './modules/animation'
 import { downloadFile } from './modules/file'
 // import './modules/three/original/postprocessing/BloomPass'
 import store from './store'
 // import lineCoordinateCache from '../json/lineCoordinateCache.json'
-import { EASE } from './constant'
 
-import vertexShader from '../shaders/top/milky-way/particle.vert'
-import fragmentShader from '../shaders/top/milky-way/particle.frag'
+import vertexShader from '../shaders/shooting-star.vert'
+import fragmentShader from '../shaders/shooting-star.frag'
 
 const data = {
   visible: {
@@ -145,10 +141,6 @@ export default class ShootingStar {
     this.lineCoordinateList = []
     this.enableSaveCoordinate = false
 
-    root.addUpdateCallback(timestamp => {
-      this.update(timestamp)
-    })
-
     root.addResizeCallback(() => {
       this.setSize()
 
@@ -163,33 +155,9 @@ export default class ShootingStar {
       // console.log(scale)
       // mesh.scale.set(scale, scale, 1)
     })
-  }
 
-  setEvent () {
-    window.addEventListener('pointermove', e => {
-      const { clientX, clientY } = e
-      this.draw({
-        clientX: clientX - store.clientHalfWidth,
-        clientY: clientY - store.clientHalfHeight
-      })
-    })
-    window.addEventListener('touchmove', e => {
-      const { clientX, clientY } = e.touches[0]
-      this.draw({
-        clientX: clientX - store.clientHalfWidth,
-        clientY: clientY - store.clientHalfHeight
-      })
-    })
-    window.addEventListener('keydown', ({ key }) => {
-      switch (key) {
-        case 'r':
-          !this.enableSaveCoordinate && (this.lineCoordinateList = [])
-          this.enableSaveCoordinate = !this.enableSaveCoordinate
-          break
-        case 's':
-          this.lineCoordinateList.length > 0 && downloadFile(JSON.stringify(this.lineCoordinateList), 'lineCoordinateCache.json')
-          break
-      }
+    root.addUpdateCallback(timestamp => {
+      this.update(timestamp)
     })
   }
 
@@ -244,50 +212,33 @@ export default class ShootingStar {
   }
 
   start () {
-    const period = Math.PI * 3
+    this.oldPosition = null
 
-    return new Promise(resolve => {
-      animate(progress => {
-        this.draw({
-          clientX: Math.cos(progress * period) * 150,
-          clientY: (progress * store.clientHeight - store.clientHalfHeight) * 1.2
-        })
-      }, {
-        duration: 1300,
-        easing: EASE,
-        onAfter: () => {
-          this.draw({
-            clientX: -store.clientHalfWidth,
-            clientY: (store.clientHeight - store.clientHalfHeight) * 1.2
-          })
-          this.draw({
-            clientX: -store.clientHalfWidth * 1.1,
-            clientY: 0
-          })
-
-          this.startText()
-
-          resolve()
-        }
+    window.addEventListener('pointermove', e => {
+      const { clientX, clientY } = e
+      this.draw({
+        clientX: clientX - store.clientHalfWidth,
+        clientY: clientY - store.clientHalfHeight
       })
     })
-  }
-
-  startText () {
-    animate(progress => {
+    window.addEventListener('touchmove', e => {
+      const { clientX, clientY } = e.touches[0]
       this.draw({
-        clientX: progress,
-        clientY: 0
+        clientX: clientX - store.clientHalfWidth,
+        clientY: clientY - store.clientHalfHeight
       })
-    }, {
-      begin: -store.clientHalfWidth,
-      finish: store.clientHalfWidth,
-      duration: 600,
-      easing: EASE,
-      onAfter: () => {
-        this.oldPosition = null
-        this.setEvent()
+    })
+    window.addEventListener('keydown', ({ key }) => {
+      switch (key) {
+        case 'r':
+          !this.enableSaveCoordinate && (this.lineCoordinateList = [])
+          this.enableSaveCoordinate = !this.enableSaveCoordinate
+          break
+        case 's':
+          this.lineCoordinateList.length > 0 && downloadFile(JSON.stringify(this.lineCoordinateList), 'lineCoordinateCache.json')
+          break
       }
     })
   }
 }
+
