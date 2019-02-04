@@ -19,7 +19,7 @@ uniform float speed;
 uniform float far;
 uniform float spread;
 uniform float maxSpread;
-uniform float spreadZ;
+uniform float maxZ;
 uniform float maxDiff;
 uniform float diffPow;
 
@@ -27,6 +27,7 @@ varying float vProgress;
 varying float vRandom;
 varying float vDiff;
 varying float vSpreadLength;
+varying float vPositionZ;
 
 #pragma glslify: ease = require(glsl-easings/cubic-out)
 // #pragma glslify: cubicBezier = require(../../modules/cubicBezier.glsl)
@@ -64,7 +65,7 @@ void main () {
   vec3 endPosition = startPosition;
   endPosition.xy += xySpread;
   endPosition.xy -= aFront * far * random;
-  endPosition.z += cPosition.z * spreadZ;
+  endPosition.z += cPosition.z * maxZ;
 
   float positionProgress = ease(progress * random);
   // float positionProgress = cubicBezier(.29, .16, .3, 1., progress);
@@ -74,6 +75,7 @@ void main () {
   vRandom = random;
   vDiff = diff;
   vSpreadLength = cPosition.y;
+  vPositionZ = position.z;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(currentPosition, 1.);
   gl_PointSize = currentPosition.z * size * diff * pixelRatio;

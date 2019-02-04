@@ -46,10 +46,15 @@ const uniformData = {
     value: 5,
     range: [1, 20]
   },
-  spreadZ: {
+  maxZ: {
     type: '1f',
     value: 100,
     range: [0, 500]
+  },
+  blur: {
+    type: '1f',
+    value: 1,
+    range: [0, 1]
   },
   far: {
     type: '1f',
