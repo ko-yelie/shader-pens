@@ -121,10 +121,10 @@ class WebGL {
         clientY: 0
       })
 
-      this.text.update(progress - store.clientWidth * 0.1)
+      this.text.update(progress - store.clientWidth * 0.15)
     }, {
-      begin: -store.clientHalfWidth,
-      finish: store.clientHalfWidth,
+      begin: -store.clientHalfWidth * 1.05,
+      finish: store.clientHalfWidth * 1.05,
       duration: store.textDatData.duration,
       easing: store.textDatData.easing,
       onAfter: () => {
