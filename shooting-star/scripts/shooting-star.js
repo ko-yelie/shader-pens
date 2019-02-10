@@ -21,6 +21,11 @@ const uniformData = {
     value: 0.05,
     range: [0, 1]
   },
+  minSize: {
+    type: '1f',
+    value: 0.8,
+    range: [0, 5]
+  },
   speed: {
     type: '1f',
     value: 0.012,

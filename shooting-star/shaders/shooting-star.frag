@@ -19,17 +19,19 @@ varying float vPositionZ;
 const vec3 baseColor = vec3(170., 133., 88.) / 255.;
 
 void main(){
-	vec2 p = gl_PointCoord.st * 2. - 1.;
+	vec2 p = gl_PointCoord * 2. - 1.;
 	float len = length(p);
 
   float cRandom = random(vec2(vProgress * 0.001 * vRandom));
   cRandom = mix(0.3, 2., cRandom);
 
-  float darkness = mix(0.1, 1., vPositionZ);
-
   float cBlur = blur * mix(1., 0.3, vPositionZ);
 	float shape = smoothstep(1. - cBlur, 1. + cBlur, (1. - cBlur) / len);
   shape *= mix(0.5, 1., vRandom);
+
+  if (shape == 0.) discard;
+
+  float darkness = mix(0.1, 1., vPositionZ);
 
   float alphaProgress = vProgress * alphaSpeed * mix(2.5, 1., pow(vDiff, 0.6));
   alphaProgress *= mix(maxAlpha, 1., spreadEase(vSpreadLength) * diffEase(vDiff));

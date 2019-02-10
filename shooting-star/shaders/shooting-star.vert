@@ -14,6 +14,7 @@ uniform float pixelRatio;
 uniform float timestamp;
 
 uniform float size;
+uniform float minSize;
 // uniform float delay;
 uniform float speed;
 uniform float far;
@@ -65,7 +66,7 @@ void main () {
   vec3 endPosition = startPosition;
   endPosition.xy += xySpread;
   endPosition.xy -= aFront * far * random;
-  endPosition.z += cPosition.z * maxZ;
+  endPosition.z += cPosition.z * maxZ * (pixelRatio > 1. ? 1.2 : 1.);
 
   float positionProgress = ease(progress * random);
   // float positionProgress = cubicBezier(.29, .16, .3, 1., progress);
@@ -78,5 +79,5 @@ void main () {
   vPositionZ = position.z;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(currentPosition, 1.);
-  gl_PointSize = currentPosition.z * size * diff * pixelRatio;
+  gl_PointSize = max(currentPosition.z * size * diff * pixelRatio, minSize * (pixelRatio > 1. ? 1.3 : 1.));
 }
