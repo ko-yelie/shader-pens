@@ -37,7 +37,7 @@ export default class Text {
     texture.needsUpdate = true
     texture.minFilter = THREE.LinearFilter
 
-    const geometry = new THREE.PlaneGeometry(width, height)
+    const geometry = new THREE.PlaneBufferGeometry(width, height)
 
     const uniforms = {
       map: {

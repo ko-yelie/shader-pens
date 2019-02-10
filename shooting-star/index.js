@@ -5,6 +5,7 @@ import Controller from './scripts/modules/datGUI-utils'
 import { animate } from './scripts/modules/animation'
 import { easingList } from './scripts/modules/easing'
 // import './scripts/modules/three/original/postprocessing/BloomPass'
+import Background from './scripts/background'
 import ShootingStar from './scripts/shooting-star'
 import Text from './scripts/text'
 import store from './scripts/store'
@@ -43,12 +44,6 @@ class WebGL {
     })
     store.controller = controller
 
-    data['play'].value = () => {
-      this.textStart()
-    }
-    const folder = controller.addFolder('Text')
-    store.textDatData = controller.addData(data, { folder })
-
     const initialClientWidth = store.initialClientWidth = container.clientWidth
     const initialClientHeight = store.initialClientHeight = container.clientHeight
     // store.initialRatio = container.clientWidth / container.clientHeight
@@ -70,7 +65,16 @@ class WebGL {
       this.setSize()
     })
 
+    this.background = new Background()
+
+    data['play'].value = () => {
+      this.textStart()
+    }
+    const folder = controller.addFolder('Text')
+    store.textDatData = controller.addData(data, { folder })
+
     this.text = new Text()
+
     this.shootingStar = new ShootingStar()
 
     // root.initPostProcessing([
