@@ -1,9 +1,9 @@
-import * as THREE from 'three'
-import TrackballControls from 'three-trackballcontrols'
+// import * as THREE from 'three'
+// import TrackballControls from 'three-trackballcontrols'
 
-import './three/postprocessing'
+// import './three/postprocessing'
 
-THREE.TrackballControls = TrackballControls
+// THREE.TrackballControls = TrackballControls
 
 /*!
  * Three.js Wrapper

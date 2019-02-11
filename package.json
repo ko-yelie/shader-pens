@@ -10,7 +10,8 @@
     "sand-wind-2": "parcel ./sand-wind-2/index.pug --no-hmr --open",
     "warp": "parcel ./warp/index.pug --no-hmr --open",
     "sand-wind-3": "parcel ./sand-wind-3/index.pug --no-hmr --open",
-    "shooting-star": "parcel ./shooting-star/index.pug --no-hmr --open"
+    "shooting-star": "parcel ./shooting-star/index.pug --no-hmr --open",
+    "build:shooting-star": "parcel build ./shooting-star/index.pug --no-source-maps --no-minify"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

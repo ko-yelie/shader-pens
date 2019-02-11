@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+// import * as THREE from 'three'
 
 import { animate } from './modules/animation'
 import { downloadFile } from './modules/file'

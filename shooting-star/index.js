@@ -1,4 +1,4 @@
-import * as THREE from 'three'
+// import * as THREE from 'three'
 
 import THREERoot from './scripts/modules/THREERoot'
 import Controller from './scripts/modules/datGUI-utils'

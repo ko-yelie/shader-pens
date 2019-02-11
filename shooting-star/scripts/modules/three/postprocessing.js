@@ -1,4 +1,4 @@
-import 'three'
+// import 'three'
 
 import './original/postprocessing/core/EffectComposer'
 import './original/postprocessing/core/ShaderPass'
