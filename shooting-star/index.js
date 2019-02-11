@@ -5,17 +5,17 @@ import Controller from './scripts/modules/datGUI-utils'
 import { animate } from './scripts/modules/animation'
 import { easingList } from './scripts/modules/easing'
 // import './scripts/modules/three/original/postprocessing/BloomPass'
-import Background from './scripts/background'
+// import Background from './scripts/background'
 import ShootingStar from './scripts/shooting-star'
 import Text from './scripts/text'
 import store from './scripts/store'
 
 export const CAMERA_Z = 5000
 export const MAX_CAMERA_Z = 5000
-export const FIRST_DURATION = 1000
-export const TEXT_DURATION = 1000
-export const EASE = 'easeOutQuart'
-export const DELAY = 600
+export const FIRST_DURATION = 1080
+export const TEXT_DURATION = 1080
+export const EASE = 'easeOutQuint'
+export const DELAY = 300
 
 const data = {
   play: {
@@ -56,8 +56,7 @@ class WebGL {
       zFar: MAX_CAMERA_Z,
       cameraPosition: [0, 0, CAMERA_Z],
       aspect: window.innerWidth / window.innerHeight,
-      canvas,
-      alpha: true
+      canvas
     })
 
     this.setSize()
@@ -65,7 +64,7 @@ class WebGL {
       this.setSize()
     })
 
-    this.background = new Background()
+    // this.background = new Background()
 
     data['play'].value = () => {
       this.textStart()
@@ -94,26 +93,29 @@ class WebGL {
 
   start () {
     const period = Math.PI * 3
+    const amplitude = Math.min(Math.max(store.clientWidth * 0.1, 100), 180)
 
     animate(progress => {
       this.shootingStar.draw({
-        clientX: Math.cos(progress * period) * 150,
-        clientY: (progress * store.clientHeight - store.clientHalfHeight) * 1.2
+        clientX: Math.cos(progress * period) * amplitude,
+        clientY: (progress * store.clientHeight - store.clientHalfHeight) * 1.3
       })
     }, {
       duration: FIRST_DURATION,
-      easing: EASE,
+      // easing: EASE,
       onAfter: () => {
         this.shootingStar.draw({
           clientX: -store.clientHalfWidth,
-          clientY: (store.clientHeight - store.clientHalfHeight) * 1.2
+          clientY: store.clientHeight - store.clientHalfHeight
         })
         this.shootingStar.draw({
           clientX: -store.clientHalfWidth * 1.1,
           clientY: 0
         })
 
-        this.textStart()
+        setTimeout(() => {
+          this.textStart()
+        }, 300)
       }
     })
   }
@@ -125,14 +127,16 @@ class WebGL {
         clientY: 0
       })
 
-      this.text.update(progress - store.clientWidth * 0.15)
+      this.text.update(progress - store.clientWidth * 0.09)
     }, {
-      begin: -store.clientHalfWidth * 1.05,
-      finish: store.clientHalfWidth * 1.05,
+      begin: -store.clientHalfWidth * 1.1,
+      finish: store.clientHalfWidth * 1.1,
       duration: store.textDatData.duration,
       easing: store.textDatData.easing,
       onAfter: () => {
         this.shootingStar.start()
+
+        document.getElementById('message').classList.add('o-show')
       }
     })
   }

@@ -4,7 +4,6 @@ import { animate } from './modules/animation'
 import { downloadFile } from './modules/file'
 // import './modules/three/original/postprocessing/BloomPass'
 import store from './store'
-// import lineCoordinateCache from '../json/lineCoordinateCache.json'
 
 import vertexShader from '../shaders/shooting-star.vert'
 import fragmentShader from '../shaders/shooting-star.frag'
@@ -17,62 +16,50 @@ const data = {
 
 const uniformData = {
   size: {
-    type: '1f',
     value: 0.05,
     range: [0, 1]
   },
   minSize: {
-    type: '1f',
-    value: 0.8,
+    value: 1,
     range: [0, 5]
   },
   speed: {
-    type: '1f',
     value: 0.012,
     range: [0, 0.05]
   },
   alphaSpeed: {
-    type: '1f',
     value: 1.1,
     range: [1, 2]
   },
   maxAlpha: {
-    type: '1f',
     value: 1.5,
     range: [1, 5]
   },
   spread: {
-    type: '1f',
     value: 7,
     range: [0, 20]
   },
   maxSpread: {
-    type: '1f',
     value: 5,
     range: [1, 20]
   },
   maxZ: {
-    type: '1f',
     value: 100,
     range: [0, 500]
   },
   blur: {
-    type: '1f',
     value: 1,
     range: [0, 1]
   },
   far: {
-    type: '1f',
     value: 10,
     range: [0, 100]
   },
   maxDiff: {
-    type: '1f',
     value: 100,
     range: [0, 1000]
   },
   diffPow: {
-    type: '1f',
     value: 0.24,
     range: [0, 10]
   }
@@ -80,7 +67,7 @@ const uniformData = {
 const DATA_KEYS = Object.keys(uniformData)
 
 const PER_MOUSE = 800
-const COUNT = PER_MOUSE * 200
+const COUNT = PER_MOUSE * 400
 const MOUSE_ATTRIBUTE_COUNT = 4
 const FRONT_ATTRIBUTE_COUNT = 2
 
@@ -237,17 +224,6 @@ export default class ShootingStar {
         clientX: clientX - store.clientHalfWidth,
         clientY: clientY - store.clientHalfHeight
       })
-    })
-    window.addEventListener('keydown', ({ key }) => {
-      switch (key) {
-        case 'r':
-          !this.enableSaveCoordinate && (this.lineCoordinateList = [])
-          this.enableSaveCoordinate = !this.enableSaveCoordinate
-          break
-        case 's':
-          this.lineCoordinateList.length > 0 && downloadFile(JSON.stringify(this.lineCoordinateList), 'lineCoordinateCache.json')
-          break
-      }
     })
   }
 }

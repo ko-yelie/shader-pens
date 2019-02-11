@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import * as BAS from 'three-bas'
 
 import { getTextCoordinate } from './modules/canvas'
 import store from './store'
@@ -10,7 +9,7 @@ import fragmentShader from '../shaders/text.frag'
 const TEXT = 'Shooting Star'
 const FONT_SIZE = 30
 const LETTER_SPACING = 0.2
-const FONT = 'Georgia, "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN W3", "游明朝", "Yu Mincho", YuMincho, serif'
+const FONT = 'Georgia, serif'
 const COLOR = '#fff'
 
 export default class Text {
@@ -41,19 +40,15 @@ export default class Text {
 
     const uniforms = {
       map: {
-        type: 't',
         value: texture
       },
       uProgress: {
-        type: '1f',
         value: -store.clientHalfWidth
       },
       uStartX: {
-        type: '1f',
         value: store.clientHalfWidth - halfWidth
       },
       uRatio: {
-        type: '1f',
         value: width / height
       }
     }
@@ -62,9 +57,7 @@ export default class Text {
       uniforms,
       vertexShader,
       fragmentShader,
-      transparent: true,
-      depthTest: false,
-      blending: THREE.AdditiveBlending
+      transparent: true
     })
 
     const mesh = this.mesh = new THREE.Mesh(geometry, material)

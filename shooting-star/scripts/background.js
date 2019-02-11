@@ -14,9 +14,21 @@ const data = {
 
 const uniformData = {
   speed: {
-    type: '1f',
-    value: 0.001,
-    range: [0, 0.1]
+    value: 1.5,
+    range: [0, 10]
+  },
+  alpha: {
+    value: 0.08,
+    range: [0, 1]
+  },
+  zoom: {
+    value: 1,
+    range: [0, 10]
+  },
+  color: {
+    isColor: true,
+    // value: [183, 161, 3]
+    value: [0, 62, 118]
   }
 }
 const DATA_KEYS = Object.keys(uniformData)
@@ -51,7 +63,7 @@ export default class ShootingStar {
       uniforms,
       vertexShader,
       fragmentShader,
-      depthTest: false
+      transparent: true
     })
 
     const mesh = this.mesh = new THREE.Mesh(geometry, material)

@@ -20,8 +20,9 @@ export default class Controller {
    */
   addData (data, options = {}) {
     const {
+      folder = this.gui,
       callback = noop,
-      folder = this.gui
+      isUniform
     } = options
     const dataKeys = Object.keys(data)
     const datData = {}
@@ -32,28 +33,53 @@ export default class Controller {
 
     dataKeys.forEach(key => {
       const {
+        isColor,
         value,
         range,
-        type,
         onChange,
         listen
       } = data[key]
 
-      let guiRange = []
-      if (range) {
-        guiRange = range
-      } else if (key === 'frame') {
-        guiRange = [0, 1]
-      } else if (typeof value === 'number') {
-        if (value < 1 && value >= 0) {
-          guiRange = [0, 1]
-        } else {
-          const diff = Math.pow(10, String(Math.floor(value)).length - 1) * 2
-          guiRange = [value - diff, value + diff]
+      let type
+      if (isUniform) {
+        switch (typeof value) {
+          case 'boolean':
+            type = '1i'
+            break;
+          case 'array':
+            type = value.length + 'f'
+            break;
+          case 'object':
+            type = 't'
+            break;
+          default:
+            type = '1f'
+            break;
         }
       }
 
-      const controller = folder.add(datData, key, ...guiRange)
+      let controller
+
+      if (isColor) {
+        controller = folder.addColor(datData, key)
+      } else {
+        let guiRange = []
+        if (range) {
+          guiRange = range
+        } else if (key === 'frame') {
+          guiRange = [0, 1]
+        } else if (typeof value === 'number') {
+          if (value < 1 && value >= 0) {
+            guiRange = [0, 1]
+          } else {
+            const diff = Math.pow(10, String(Math.floor(value)).length - 1) * 2
+            guiRange = [value - diff, value + diff]
+          }
+        }
+
+        controller = folder.add(datData, key, ...guiRange)
+      }
+
       onChange && controller.onChange(value => { onChange(value) })
       listen && controller.listen()
 
@@ -68,7 +94,8 @@ export default class Controller {
       callback: (key, obj) => {
         uniforms[key] = obj
       },
-      folder: options.folder
+      folder: options.folder,
+      isUniform: true
     })
   }
 

@@ -14,30 +14,20 @@ body {
   height: 100%;
 }
 
-.dg {
-  &.ac {
-    z-index: 9999 !important; // stylelint-disable
-  }
+.message {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  color: rgba(#fff, 0.7);
+  font-family: Georgia, serif;
+  font-size: 0.9rem;
+  text-align: center;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transition: opacity 500ms;
 
-  .dg {
-    /* stylelint-disable property-no-vendor-prefix */
-    input[type=checkbox] {
-      -moz-appearance: checkbox;
-      -webkit-appearance: checkbox;
-      appearance: checkbox;
-    }
-    select {
-      -moz-appearance: menulist;
-      -webkit-appearance: menulist;
-      appearance: menulist;
-      background-color: rgb(248, 248, 248);
-      border-width: 1px;
-      border-style: solid;
-      border-color: rgb(166, 166, 166);
-      border-image: initial;
-      color: black;
-      font-family: inherit;
-    }
-    /* stylelint-enable property-no-vendor-prefix */
+  &.o-show {
+    opacity: 1;
   }
 }
