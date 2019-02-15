@@ -120,7 +120,7 @@ class WebGL {
       onAfter: () => {
         this.shootingStar.start()
 
-        document.getElementById('message').classList.add('o-show')
+        document.body.classList.add('o-start')
       }
     })
   }
