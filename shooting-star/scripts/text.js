@@ -9,12 +9,14 @@ import fragmentShader from '../shaders/text.frag'
 
 const TEXT = 'Shooting Star'
 const FONT_SIZE = 30
+const FONT_SIZE_SP = 24
+const FONT_SIZE_MIN = 20
 const LETTER_SPACING = 0.18
+const LETTER_SPACING_SP = 0.1
 const FONT = 'Georgia, serif'
 const COLOR = '#fff'
-
-export const TEXT_DURATION = 1080
-export const EASE = 'easeOutQuint'
+const TEXT_DURATION = 1080
+const EASE = 'easeOutQuint'
 
 const data = {
   visible: {
@@ -36,7 +38,7 @@ const uniformData = {
     range: [0, 1]
   }
 }
-const DATA_KEYS = Object.keys(uniformData)
+const dataKeys = Object.keys(uniformData)
 
 export default class Text {
   constructor () {
@@ -45,14 +47,17 @@ export default class Text {
     const folder = this.folder = controller.addFolder('Text')
     this.datData = controller.addData(data, { folder })
 
-    const textWidth = FONT_SIZE * TEXT.length + FONT_SIZE * LETTER_SPACING * (TEXT.length - 1)
-    const textHeight = FONT_SIZE * 1.2
+    const fontSize = store.clientWidth < 360 ? FONT_SIZE_MIN : store.clientWidth < 768 ? FONT_SIZE_SP : FONT_SIZE
+    const letterSpacing = store.clientWidth < 768 ? LETTER_SPACING_SP : LETTER_SPACING
+    const textNormalWidth = TEXT.length + letterSpacing * (TEXT.length - 1)
+    const textWidth = fontSize * textNormalWidth
+    const textHeight = fontSize * 1.2
     const pixelRatio = window.devicePixelRatio
     const textCanvas = getTextCoordinate({
       text: TEXT,
-      fontSize: FONT_SIZE,
+      fontSize,
       height: textHeight,
-      letterSpacing: LETTER_SPACING,
+      letterSpacing,
       font: FONT,
       color: COLOR,
       pixelRatio
@@ -100,7 +105,7 @@ export default class Text {
 
     root.addUpdateCallback(timestamp => {
       this.mesh.visible = this.datData.visible
-      DATA_KEYS.forEach(key => {
+      dataKeys.forEach(key => {
         this.material.uniforms[key].value = this.datUniformData[key]
       })
     })

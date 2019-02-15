@@ -9,10 +9,10 @@ import ShootingStar from './scripts/shooting-star'
 import Text from './scripts/text'
 import store from './scripts/store'
 
-export const CAMERA_Z = 5000
-export const MAX_CAMERA_Z = 5000
-export const FIRST_DURATION = 1080
-export const DELAY = 300
+const CAMERA_Z = 5000
+const MAX_CAMERA_Z = 5000
+const FIRST_DURATION = 1080
+const DELAY = 300
 
 const data = {
   play: {

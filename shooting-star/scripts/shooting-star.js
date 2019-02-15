@@ -73,7 +73,7 @@ const uniformData = {
     range: [0, 10]
   }
 }
-const DATA_KEYS = Object.keys(uniformData)
+const dataKeys = Object.keys(uniformData)
 
 export default class ShootingStar {
   constructor () {
@@ -176,7 +176,7 @@ export default class ShootingStar {
     this.material.uniforms['timestamp'].value = timestamp
 
     this.mesh.visible = this.datData.visible
-    DATA_KEYS.forEach(key => {
+    dataKeys.forEach(key => {
       this.material.uniforms[key].value = this.datUniformData[key]
     })
   }
