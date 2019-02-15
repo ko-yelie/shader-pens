@@ -15,26 +15,24 @@ const LETTER_SPACING = 0.18
 const LETTER_SPACING_SP = 0.1
 const FONT = 'Georgia, serif'
 const COLOR = '#fff'
-const TEXT_DURATION = 1080
-const EASE = 'easeOutQuint'
 
 const data = {
   visible: {
     value: true
   },
   duration: {
-    value: TEXT_DURATION,
+    value: 1080,
     range: [0, 5000]
   },
   easing: {
-    value: EASE,
+    value: 'easeOutQuint',
     range: [easingList]
   }
 }
 
 const uniformData = {
   alpha: {
-    value: 0.85,
+    value: 0.8,
     range: [0, 1]
   }
 }
