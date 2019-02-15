@@ -8,6 +8,11 @@ import store from './store'
 import vertexShader from '../shaders/shooting-star.vert'
 import fragmentShader from '../shaders/shooting-star.frag'
 
+const PER_MOUSE = 800
+const COUNT = PER_MOUSE * 400
+const MOUSE_ATTRIBUTE_COUNT = 4
+const FRONT_ATTRIBUTE_COUNT = 2
+
 const data = {
   visible: {
     value: true
@@ -27,13 +32,17 @@ const uniformData = {
     value: 0.012,
     range: [0, 0.05]
   },
-  alphaSpeed: {
+  fadeSpeed: {
     value: 1.1,
     range: [1, 2]
   },
-  maxAlpha: {
-    value: 1.5,
+  shortRangeFadeSpeed: {
+    value: 1.3,
     range: [1, 5]
+  },
+  minFlashingSpeed: {
+    value: 0.1,
+    range: [0, 1]
   },
   spread: {
     value: 7,
@@ -65,11 +74,6 @@ const uniformData = {
   }
 }
 const DATA_KEYS = Object.keys(uniformData)
-
-const PER_MOUSE = 800
-const COUNT = PER_MOUSE * 400
-const MOUSE_ATTRIBUTE_COUNT = 4
-const FRONT_ATTRIBUTE_COUNT = 2
 
 export default class ShootingStar {
   constructor () {

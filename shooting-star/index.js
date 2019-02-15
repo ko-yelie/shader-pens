@@ -3,7 +3,6 @@
 import THREERoot from './scripts/modules/THREERoot'
 import Controller from './scripts/modules/datGUI-utils'
 import { animate } from './scripts/modules/animation'
-import { easingList } from './scripts/modules/easing'
 // import './scripts/modules/three/original/postprocessing/BloomPass'
 // import Background from './scripts/background'
 import ShootingStar from './scripts/shooting-star'
@@ -13,24 +12,11 @@ import store from './scripts/store'
 export const CAMERA_Z = 5000
 export const MAX_CAMERA_Z = 5000
 export const FIRST_DURATION = 1080
-export const TEXT_DURATION = 1080
-export const EASE = 'easeOutQuint'
 export const DELAY = 300
 
 const data = {
   play: {
     value: null
-  },
-  visible: {
-    value: true
-  },
-  duration: {
-    value: TEXT_DURATION,
-    range: [0, 5000]
-  },
-  easing: {
-    value: EASE,
-    range: [easingList]
   }
 }
 
@@ -66,15 +52,14 @@ class WebGL {
 
     // this.background = new Background()
 
-    data['play'].value = () => {
-      this.textStart()
-    }
-    const folder = controller.addFolder('Text')
-    store.textDatData = controller.addData(data, { folder })
-
     this.text = new Text()
 
     this.shootingStar = new ShootingStar()
+
+    data['play'].value = () => {
+      this.textStart()
+    }
+    controller.addData(data, { folder: this.text.folder })
 
     // root.initPostProcessing([
     //   new THREE.BloomPass(),
@@ -102,7 +87,6 @@ class WebGL {
       })
     }, {
       duration: FIRST_DURATION,
-      // easing: EASE,
       onAfter: () => {
         this.shootingStar.draw({
           clientX: -store.clientHalfWidth,
@@ -127,12 +111,12 @@ class WebGL {
         clientY: 0
       })
 
-      this.text.update(progress - store.clientWidth * 0.09)
+      this.text.update(progress - store.clientWidth * 0.08)
     }, {
       begin: -store.clientHalfWidth * 1.1,
       finish: store.clientHalfWidth * 1.1,
-      duration: store.textDatData.duration,
-      easing: store.textDatData.easing,
+      duration: this.text.datData.duration,
+      easing: this.text.datData.easing,
       onAfter: () => {
         this.shootingStar.start()
 

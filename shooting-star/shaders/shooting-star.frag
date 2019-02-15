@@ -2,8 +2,9 @@ precision highp float;
 precision highp int;
 
 // uniform float uProgress;
-uniform float alphaSpeed;
-uniform float maxAlpha;
+uniform float fadeSpeed;
+uniform float shortRangeFadeSpeed;
+uniform float minFlashingSpeed;
 uniform float blur;
 
 varying float vProgress;
@@ -22,7 +23,7 @@ void main(){
 	vec2 p = gl_PointCoord * 2. - 1.;
 	float len = length(p);
 
-  float cRandom = random(vec2(vProgress * 0.001 * vRandom));
+  float cRandom = random(vec2(vProgress * mix(minFlashingSpeed, 1., vRandom)));
   cRandom = mix(0.3, 2., cRandom);
 
   float cBlur = blur * mix(1., 0.3, vPositionZ);
@@ -33,8 +34,8 @@ void main(){
 
   float darkness = mix(0.1, 1., vPositionZ);
 
-  float alphaProgress = vProgress * alphaSpeed * mix(2.5, 1., pow(vDiff, 0.6));
-  alphaProgress *= mix(maxAlpha, 1., spreadEase(vSpreadLength) * diffEase(vDiff));
+  float alphaProgress = vProgress * fadeSpeed * mix(2.5, 1., pow(vDiff, 0.6));
+  alphaProgress *= mix(shortRangeFadeSpeed, 1., spreadEase(vSpreadLength) * diffEase(vDiff));
   float alpha = 1. - min(alphaProgress, 1.);
   alpha *= cRandom * vDiff;
 
