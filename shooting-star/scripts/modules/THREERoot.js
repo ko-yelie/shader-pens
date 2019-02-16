@@ -1,9 +1,9 @@
-import * as THREE from 'three'
-import TrackballControls from 'three-trackballcontrols'
+// import * as THREE from 'three'
+// import TrackballControls from 'three-trackballcontrols'
 
-import './three/postprocessing'
+// import './three/postprocessing'
 
-THREE.TrackballControls = TrackballControls
+// THREE.TrackballControls = TrackballControls
 
 /*!
  * Three.js Wrapper
@@ -19,7 +19,7 @@ export default class THREERoot {
       zFar,
       cameraPosition = [0, 0, 30],
       createCameraControls = false,
-      autoStart = true,
+      isAutoStart = true,
       pixelRatio = window.devicePixelRatio,
       antialias = (window.devicePixelRatio === 1),
       alpha = false,
@@ -79,7 +79,7 @@ export default class THREERoot {
     })
 
     // tick / update / render
-    autoStart && this.start()
+    isAutoStart && this.start()
 
     // optional camera controls
     createCameraControls && this.createOrbitControls()
@@ -133,6 +133,31 @@ export default class THREERoot {
     this.tick()
   }
 
+  tick () {
+    this.update()
+    this.render()
+    this.animationFrameId = requestAnimationFrame(timestamp => {
+      this.time = timestamp - this.startTime
+      this.tick()
+    })
+  }
+
+  update () {
+    let time = this.time * this.speed
+    time = this.interval ? time % this.interval : time
+
+    this.updateCallbacks.forEach(fn => { fn(time) })
+  }
+
+  render () {
+    this.renderer.render(this.scene, this.camera)
+  }
+
+  draw () {
+    this.update()
+    this.render()
+  }
+
   stop () {
     cancelAnimationFrame(this.animationFrameId)
     this.animationFrameId = null
@@ -183,31 +208,6 @@ export default class THREERoot {
       object.parent.remove(object)
       delete this.objects[o]
     }
-  }
-
-  tick () {
-    this.update()
-    this.render()
-    this.animationFrameId = requestAnimationFrame(timestamp => {
-      this.time = timestamp - this.startTime
-      this.tick()
-    })
-  }
-
-  update () {
-    let time = this.time * this.speed
-    time = this.interval ? time % this.interval : time
-
-    this.updateCallbacks.forEach(fn => { fn(time) })
-  }
-
-  render () {
-    this.renderer.render(this.scene, this.camera)
-  }
-
-  draw () {
-    this.update()
-    this.render()
   }
 
   resize () {

@@ -1,178 +1,115 @@
-import * as THREE from 'three'
-import * as BAS from 'three-bas'
+// import * as THREE from 'three'
 
+import { easingList } from './modules/easing'
 import { getTextCoordinate } from './modules/canvas'
-import {
-  animate,
-  easingList
-} from './modules/animation'
 import store from './store'
-import {
-  EASE,
-  TEXT_DELAY
-} from './constant'
-// import './modules/three/ShaderChunk'
-import Particle from './particle'
 
-import vertexInit from '../shaders/top/text/vertexInit.vert'
-import vertexPosition from '../shaders/top/text/vertexPosition.vert'
+import vertexShader from '../shaders/general/three-raw-plain.vert'
+import fragmentShader from '../shaders/text.frag'
 
 const TEXT = 'Shooting Star'
 const FONT_SIZE = 30
-const LETTER_SPACING = 0.2
-const FONT = 'Georgia, "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN W3", "游明朝", "Yu Mincho", YuMincho, serif'
+const FONT_SIZE_SP = 24
+const FONT_SIZE_MIN = 20
+const LETTER_SPACING = 0.18
+const LETTER_SPACING_SP = 0.1
+const FONT = 'Georgia, serif'
 const COLOR = '#fff'
 
 const data = {
-  play: {
-    value: null
-  },
   visible: {
     value: true
   },
   duration: {
-    value: 2200,
+    value: 1080,
     range: [0, 5000]
   },
   easing: {
-    value: EASE,
+    value: 'easeOutQuint',
     range: [easingList]
   }
 }
 
-const DELAY = TEXT_DELAY + 300
+const uniformData = {
+  alpha: {
+    value: 0.8,
+    range: [0, 1]
+  }
+}
+const dataKeys = Object.keys(uniformData)
 
 export default class Text {
   constructor () {
-    this.initText()
-
-    this.particle = new Particle()
-  }
-
-  initText () {
     const { root, controller } = store
 
-    data['play'].value = () => {
-      this.change()
-    }
-    const folder = controller.addFolder('Text')
-    const datData = this.datData = controller.addData(data, { folder })
+    const folder = this.folder = controller.addFolder('Text')
+    this.datData = controller.addData(data, { folder })
 
-    const textWidth = FONT_SIZE * TEXT.length + FONT_SIZE * LETTER_SPACING * (TEXT.length - 1)
-    const textHeight = FONT_SIZE * 1.2
+    const fontSize = store.clientWidth < 360 ? FONT_SIZE_MIN : store.clientWidth < 768 ? FONT_SIZE_SP : FONT_SIZE
+    const letterSpacing = store.clientWidth < 768 ? LETTER_SPACING_SP : LETTER_SPACING
+    const textNormalWidth = TEXT.length + letterSpacing * (TEXT.length - 1)
+    const textWidth = fontSize * textNormalWidth
+    const textHeight = fontSize * 1.2
     const pixelRatio = window.devicePixelRatio
     const textCanvas = getTextCoordinate({
       text: TEXT,
-      fontSize: FONT_SIZE,
+      fontSize,
       height: textHeight,
-      letterSpacing: LETTER_SPACING,
+      letterSpacing,
       font: FONT,
       color: COLOR,
       pixelRatio
     })
     const width = textCanvas.width / pixelRatio
     const height = textCanvas.height / pixelRatio
+    const halfWidth = width / 2
 
     const texture = new THREE.Texture(textCanvas)
     texture.needsUpdate = true
     texture.minFilter = THREE.LinearFilter
 
-    const plane = new THREE.PlaneGeometry(width, height, textWidth * 0.5, textHeight * 0.5)
-    BAS.Utils.separateFaces(plane)
-    const geometry = new BAS.ModelBufferGeometry(plane, {
-      localizeFaces: true,
-      computeCentroids: true
-    })
-    geometry.bufferUvs()
-
-    geometry.createAttribute('aPosition', 4, (data, index) => {
-      const centroid = geometry.centroids[index]
-      new THREE.Vector4(
-        centroid.x,
-        centroid.y,
-        centroid.z,
-        Math.random()
-      ).toArray(data)
-    })
+    const geometry = new THREE.PlaneBufferGeometry(width, height)
 
     const uniforms = {
-      uProgress: {
-        type: '1f',
-        value: 0
+      map: {
+        value: texture
       },
-      uSize: {
-        type: 'vf2',
-        value: [width, height]
+      uProgress: {
+        value: -store.clientHalfWidth
+      },
+      uStartX: {
+        value: store.clientHalfWidth - halfWidth
+      },
+      uRatio: {
+        value: width / height
       }
     }
-    uniforms['uDuration'] = data.duration
 
-    const material = this.material = new BAS.BasicAnimationMaterial({
-      side: THREE.DoubleSide,
-      transparent: true,
+    this.datUniformData = controller.addUniformData(uniformData, uniforms, { folder })
+
+    const material = this.material = new THREE.RawShaderMaterial({
       uniforms,
-      uniformValues: {
-        map: texture
-      },
-      vertexFunctions: [
-        BAS.ShaderChunk['quaternion_rotation']
-        // THREE.ShaderChunk['simplex_2d'],
-      ],
-      vertexParameters: `
-        attribute vec4 aPosition;
-
-        uniform float uProgress;
-        uniform float uDuration;
-        uniform vec2 uSize;
-
-        const float delayK = 2000.;
-        const float delayAngle = 45.;
-        const float minWeight = 0.6;
-        const float minOffsetX = 100.;
-        const float maxOffsetX = 2000.;
-        const float maxOffsetY = 300.;
-        const float minOffsetZ = 0.1;
-        const float maxOffsetZ = 4000.;
-        const float minScale = 0.2;
-        const float maxScale = 0.8;
-      `,
-      varyingParameters: `
-        varying float vAlpha;
-      `,
-      vertexInit,
-      vertexPosition,
-      vertexColor: `
-        vAlpha = progress * step(1., progress);
-      `,
-      fragmentDiffuse: `
-        diffuseColor.a *= vAlpha;
-      `
+      vertexShader,
+      fragmentShader,
+      transparent: true
     })
 
     const mesh = this.mesh = new THREE.Mesh(geometry, material)
     mesh.frustumCulled = false
-    mesh.visible = datData.visible
+    mesh.visible = this.datData.visible
     mesh.position.setZ(0.1)
 
     root.add(mesh)
-  }
 
-  change () {
-    this.material.uniforms['uProgress'].value = 0
-    setTimeout(() => {
-      animate(progress => { this.update(progress) }, {
-        duration: this.datData.duration,
-        easing: this.datData.easing
+    root.addUpdateCallback(timestamp => {
+      this.mesh.visible = this.datData.visible
+      dataKeys.forEach(key => {
+        this.material.uniforms[key].value = this.datUniformData[key]
       })
-    }, DELAY)
-
-    this.particle.change()
+    })
   }
 
   update (progress) {
     this.material.uniforms['uProgress'].value = progress
-
-    this.mesh.visible = this.datData.visible
-    this.material.uniforms['uDuration'].value = this.datData['duration']
   }
 }

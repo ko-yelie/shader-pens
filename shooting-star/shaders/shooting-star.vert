@@ -14,12 +14,13 @@ uniform float pixelRatio;
 uniform float timestamp;
 
 uniform float size;
+uniform float minSize;
 // uniform float delay;
 uniform float speed;
 uniform float far;
-uniform float radius;
-uniform float maxRadius;
-uniform float spreadZ;
+uniform float spread;
+uniform float maxSpread;
+uniform float maxZ;
 uniform float maxDiff;
 uniform float diffPow;
 
@@ -27,6 +28,7 @@ varying float vProgress;
 varying float vRandom;
 varying float vDiff;
 varying float vSpreadLength;
+varying float vPositionZ;
 
 #pragma glslify: ease = require(glsl-easings/cubic-out)
 // #pragma glslify: cubicBezier = require(../../modules/cubicBezier.glsl)
@@ -59,12 +61,12 @@ void main () {
   vec3 cPosition = position * 2. - 1.;
 
   float radian = cPosition.x * PI2 - PI;
-  vec2 xySpread = vec2(cos(radian), sin(radian)) * radius * mix(1., maxRadius, diff) * cPosition.y;
+  vec2 xySpread = vec2(cos(radian), sin(radian)) * spread * mix(1., maxSpread, diff) * cPosition.y;
 
   vec3 endPosition = startPosition;
   endPosition.xy += xySpread;
   endPosition.xy -= aFront * far * random;
-  endPosition.z += cPosition.z * spreadZ;
+  endPosition.z += cPosition.z * maxZ * (pixelRatio > 1. ? 1.2 : 1.);
 
   float positionProgress = ease(progress * random);
   // float positionProgress = cubicBezier(.29, .16, .3, 1., progress);
@@ -74,7 +76,8 @@ void main () {
   vRandom = random;
   vDiff = diff;
   vSpreadLength = cPosition.y;
+  vPositionZ = position.z;
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(currentPosition, 1.);
-  gl_PointSize = currentPosition.z * size * pixelRatio;
+  gl_PointSize = max(currentPosition.z * size * diff * pixelRatio, minSize * (pixelRatio > 1. ? 1.3 : 1.));
 }

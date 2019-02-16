@@ -2,7 +2,12 @@ doctype html
 html(lang='en')
   head
     title Shooting Star
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
     link(rel='stylesheet', href='./index.scss')
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/three.js/101/three.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.5/dat.gui.min.js")
+    //- script(src="https://unpkg.com/three-trackballcontrols@0.0.7/index.js")
     script(src='./index.js', defer)
   body
     canvas.canvas#canvas
+    p.message#message Move your mouse
