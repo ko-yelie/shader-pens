@@ -1,16 +1,9 @@
 {
-  "name": "shader",
+  "name": "shader-pens",
   "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/ko-yelie/shader-pens.git",
-  "author": "ko-yelie <ko.yelie@gmail.com>",
-  "license": "MIT",
+  "private": true,
   "scripts": {
-    "sand-wind": "parcel ./sand-wind/index.pug --no-hmr --open",
-    "sand-wind-2": "parcel ./sand-wind-2/index.pug --no-hmr --open",
-    "warp": "parcel ./warp/index.pug --no-hmr --open",
-    "sand-wind-3": "parcel ./sand-wind-3/index.pug --no-hmr --open",
-    "shooting-star": "parcel ./shooting-star/index.pug --no-hmr --open",
+    "shooting-star": "parcel ./shooting-star/index.pug --no-hmr",
     "build:shooting-star": "parcel build ./shooting-star/index.pug --no-source-maps --no-minify"
   },
   "devDependencies": {

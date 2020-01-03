@@ -1,0 +1,122 @@
+<title>God Ray</title>
+
+<style>
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+  }
+</style>
+
+<body>
+  <script src="https://unpkg.com/@ko-yelie/kgl@0.2.1/dist/index.iife.min.js"></script>
+
+  <script type="x-shader/x-fragment" id="mask">
+    precision highp float;
+
+    uniform vec2 resolution;
+    uniform sampler2D image;
+    uniform vec2 imageResolution;
+
+    vec2 adjustRatio(vec2 uv, vec2 inputResolution, vec2 outputResolution) {
+      vec2 ratio = vec2(
+        min((outputResolution.x / outputResolution.y) / (inputResolution.x / inputResolution.y), 1.),
+        min((outputResolution.y / outputResolution.x) / (inputResolution.y / inputResolution.x), 1.)
+      );
+      return uv * ratio + (1. - ratio) * 0.5;
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.st / resolution;
+      uv.y = 1. - uv.y;
+      uv = adjustRatio(uv, imageResolution, resolution);
+
+      gl_FragColor = texture2D(image, uv);
+    }
+  </script>
+
+  <script>
+    /**
+     * utils
+     */
+    function loadImage(srcs, isCrossOrigin) {
+      if (!(typeof srcs === 'object' && srcs.constructor.name === 'Array')) {
+        srcs = [srcs]
+      }
+      let promises = []
+      srcs.forEach(src => {
+        const img = document.createElement('img')
+        promises.push(
+          new Promise(resolve => {
+            img.addEventListener('load', () => {
+              resolve(img)
+            })
+          })
+        )
+        if (isCrossOrigin) img.crossOrigin = 'anonymous'
+        img.src = src
+      })
+      return Promise.all(promises)
+    }
+
+    function mix(x, y, a) {
+      return x * (1 - a) + y * a
+    }
+
+    // https://gist.github.com/gre/1650294
+    function easeInOutQuint(t) { return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t }
+
+    /**
+     * main
+     */
+    ; (async function main() {
+      const image = 'https://images.unsplash.com/photo-1551467013-ebce6eacb3ed?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=800&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ' // https://unsplash.com/photos/2-yebrH4SKM
+      const interval = 1.8
+      const strength = 12
+      const maxRadius = window.innerWidth < 768 ? 0.4 : 0.8
+      const minRadius = 0.1
+
+      const [img] = await loadImage(image, true)
+
+      const webgl = new Kgl({
+        programs: {
+          mask: {
+            fragmentShaderId: 'mask',
+            uniforms: {
+              image: img,
+              imageResolution: [img.width, img.height],
+            }
+          },
+        },
+        effects: [
+          'godray',
+        ],
+        framebuffers: [
+          'mask',
+          'cache',
+          'output'
+        ],
+        tick: time => {
+          const cTime = easeInOutQuint(time % interval / interval);
+          const halfTime = -Math.abs(cTime * 2 - 1) + 1;
+
+          webgl.bindFramebuffer('mask')
+          webgl.programs['mask'].draw()
+
+          webgl.effects['godray'].draw(
+            'mask',
+            'cache',
+            'output',
+            strength,
+            [
+              mix(webgl.canvas.width, 0, cTime),
+              webgl.canvas.height * 0.5,
+            ],
+            mix(maxRadius, minRadius, halfTime),
+            true
+          )
+        },
+      })
+    })()
+  </script>
+</body>
