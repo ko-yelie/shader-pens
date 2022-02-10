@@ -12,7 +12,7 @@
     "babel-preset-es2015": "^6.24.1",
     "glslify-bundle": "^5.1.1",
     "glslify-deps": "^1.3.1",
-    "node-sass": "^4.11.0",
+    "node-sass": "^7.0.0",
     "parcel-bundler": "^1.11.0",
     "pug": "^2.0.3",
     "sass": "^1.17.0"
